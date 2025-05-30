@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<head>
+    <title>All Users</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}"/>
+</head>
+<body>
+<div class="container">
+    <h1>All Registered Users</h1>
+    <table>
+        <thead>
+        <tr>
+            <th>Username</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Roles</th>
+            <th>Photo</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="u : ${users}">
+            <td th:text="${u.lastName + ', ' + u.firstName}">Full Name</td>
+            <td th:text="${u.username}">username</td>
+            <td th:text="${u.email}">email</td>
+            <td>
+                <li th:each="r : ${u.roles}" th:text="${r.name}">ROLE_USER</li>
+            </td>
+            <!-- ✅ Thumbnail image -->
+            <td>
+                <img th:if="${u.profilePicture != null}"
+                     th:src="@{'/profile-pictures/' + ${u.profilePicture}}"
+                     alt="Profile"
+                     style="width: 40px; height: 40px; object-fit: cover; border-radius: 50%; border: 1px solid #aaa;"/>
+
+                <img th:if="${u.profilePicture == null}"
+                     th:src="@{'/profile-pictures/default.jpg'}"
+                     alt="Default Profile"
+                     style="width: 40px; height: 40px; object-fit: cover; border-radius: 50%; border: 1px solid #aaa;"/>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="back-link">
+        <a th:href="@{/dashboard}">← Back to Dashboard</a>
+    </div>
+    </br></br>
+</div>
+</body>
+</html>

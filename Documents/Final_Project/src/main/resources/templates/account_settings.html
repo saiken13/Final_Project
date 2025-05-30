@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Account Settings</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}"/>
+</head>
+<body>
+<div class="login-container">
+    <h1>Account Settings</h1>
+    <!-- ✅ Success or error message block -->
+    <div class="success" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div class="failure" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <form class="section-spacing" method="post" th:action="@{/settings}" enctype="multipart/form-data">
+        <table class="inline-style-4">
+            <tr>
+                <td><label for="firstName">First Name:</label></td>
+                <td><input id="firstName" name="firstName" required="" th:value="${user.firstName}" type="text"/></td>
+            </tr>
+            <tr>
+                <td><label for="lastName">Last Name:</label></td>
+                <td><input id="lastName" name="lastName" required="" th:value="${user.lastName}" type="text"/></td>
+            </tr>
+            <tr>
+                <td><label for="email">Email:</label></td>
+                <td><input id="email" name="email" required="" th:value="${user.email}" type="email"/></td>
+            </tr>
+            <tr>
+                <td><label for="password">New Password:</label></td>
+                <td><input id="password" name="password" placeholder="Leave blank to keep current" type="password"/></td>
+            </tr>
+
+            <!-- ✅ Add profile picture upload -->
+            <tr>
+                <td><label for="profilePicture">Change Profile Picture:</label></td>
+                <td><input id="profilePicture" name="file" type="file" accept="image/*"/></td>
+            </tr>
+
+            <!-- Remove Employees -->
+            <tr th:if="${currentEmployees != null}">
+                <td><label for="currentTeam">Remove Employees:</label></td>
+                <td>
+                    <select id="currentTeam" name="removeEmployeeIds" multiple size="5" class="form-select">
+                        <option th:each="emp : ${currentEmployees}"
+                                th:value="${emp.id}"
+                                th:text="${emp.firstName + ' ' + emp.lastName}">
+                        </option>
+                    </select>
+                </td>
+            </tr>
+
+            <!-- Add Employees -->
+            <tr th:if="${availableUsers != null}">
+                <td><label for="addEmployee">Add Employees:</label></td>
+                <td>
+                    <select id="addEmployee" name="addEmployeeIds" multiple size="5" class="form-select">
+                        <option th:each="emp : ${availableUsers}"
+                                th:value="${emp.id}"
+                                th:text="${emp.firstName + ' ' + emp.lastName}">
+                        </option>
+                    </select>
+                </td>
+            </tr>
+
+        </table>
+
+        <div class="centered-link">
+            <button type="submit">Save Changes</button>
+        </div>
+    </form>
+
+    <div class="centered-link">
+        <a th:href="@{/dashboard}">← Back to Dashboard</a>
+    </div>
+</div>
+</body>
+</html>
