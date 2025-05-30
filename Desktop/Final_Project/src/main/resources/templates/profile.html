@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>User Profile</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}"/>
+</head>
+<body>
+<div class="login-container">
+    <h1>User Profile</h1>
+    <!-- Profile Picture -->
+    <div style="text-align: center; margin-bottom: 20px;">
+        <img th:src="@{'/profile-pictures/' + ${user.profilePicture}}"
+             alt="Profile Picture"
+             style="width: 150px; height: 150px; object-fit: cover; border-radius: 50%; border: 2px solid #333;" />
+    </div>
+    <table class="profile-table">
+        <tr>
+            <td><strong>First Name:</strong></td>
+            <td th:text="${user.firstName}">Mason</td>
+        </tr>
+        <tr>
+            <td><strong>Last Name:</strong></td>
+            <td th:text="${user.lastName}">Lee</td>
+        </tr>
+        <tr>
+            <td><strong>Username:</strong></td>
+            <td th:text="${user.username}">sampleuser</td>
+        </tr>
+        <tr>
+            <td><strong>Email:</strong></td>
+            <td th:text="${user.email}">mason.lee@email.com</td>
+        </tr>
+        <tr>
+            <td><strong>Roles:</strong></td>
+            <td>
+                <ul class="no-bullets">
+                    <li th:each="role : ${user.roles}" th:text="${role.name}">ROLE_USER</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+    <div class="back-link">
+        <a th:href="@{/dashboard}">← Back to Dashboard</a>
+    </div>
+</div>
+</body>
+</html>

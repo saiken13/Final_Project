@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+
+<html xmlns:sec="https://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>User Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}"/>
+</head>
+<body>
+<div class="login-container">
+    <h1 th:text="'Hello, ' + ${user.firstName} + ' ' + ${user.lastName} + '!'">Hello!</h1>
+    <p class="profile-table">Welcome to your dashboard.</p>
+    <ul class="no-bullets">
+        <li><a th:href="@{/profile}">View Profile</a></li>
+        <li><a th:href="@{/settings}">Account Settings</a></li>
+
+        <li th:if="${#authorization.expression('hasRole(''MANAGER'')')}">
+            <a th:href="@{/manager/team}">View All Employees</a>
+        </li>
+
+        <li th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+            <a th:href="@{/admin/users}">View All Users</a>
+        </li>
+
+        <li><a class="section-spacing" th:href="@{/logout}">Log Out</a></li>
+    </ul>
+</div>
+</body>
+</html>
