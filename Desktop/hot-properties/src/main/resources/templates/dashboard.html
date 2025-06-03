@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Hot Properties - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* Placeholder for Appendix A design */
+        .dashboard-section { padding: 50px 0; }
+        /* Replace with Appendix A styles */
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+        <a class="navbar-brand" href="/">Hot Properties</a>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" th:href="@{/properties}">Properties</a></li>
+                <li class="nav-item"><a class="nav-link active" th:href="@{/dashboard}">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/profile}">Profile</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/logout}">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container dashboard-section">
+    <h1>Dashboard</h1>
+    <p>Welcome to your dashboard! Access your personalized features based on your role.</p>
+    <div th:switch="${#authorization.expression('hasRole(''ROLE_AGENT'')')}">
+        <p th:case="'true'"><a th:href="@{/listings}" class="btn btn-primary">Manage Listings</a></p>
+    </div>
+    <div th:switch="${#authorization.expression('hasRole(''ROLE_BUYER'')')}">
+        <p th:case="'true'"><a th:href="@{/browse}" class="btn btn-primary">Browse Properties</a></p>
+    </div>
+    <div th:switch="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+        <p th:case="'true'"><a th:href="@{/manage-users}" class="btn btn-primary">Manage Users</a></p>
+    </div>
+</div>
+
+<footer class="bg-light text-center py-3 mt-5">
+    <p>© 2025 Hot Properties. All rights reserved.</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

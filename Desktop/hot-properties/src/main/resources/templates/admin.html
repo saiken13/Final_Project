@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Admin Dashboard - Hot Properties</title>
+    <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+<header>
+    <h1>Admin Dashboard</h1>
+    <nav>
+        <a th:href="@{/admin/dashboard}">Home</a> |
+        <a th:href="@{/admin/user/create-agent}">Create Agent</a> |
+        <a th:href="@{/logout}">Logout</a>
+    </nav>
+</header>
+<main>
+    <h2>Manage Users</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="user : ${users}">
+            <td th:text="${user.id}">0</td>
+            <td th:text="${user.firstName + ' ' + user.lastName}">Name</td>
+            <td th:text="${user.email}">email@example.com</td>
+            <td th:text="${user.role}">Role</td>
+            <td>
+                <form th:action="@{/admin/user/delete/{id}(id=${user.id})}" method="post">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div th:if="${users.isEmpty()}">
+        <p>No users found.</p>
+    </div>
+</main>
+</body>
+</html>

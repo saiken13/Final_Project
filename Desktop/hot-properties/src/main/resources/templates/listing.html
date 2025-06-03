@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Hot Properties - Manage Listings</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* Placeholder for Appendix A design */
+        .property-card img { max-height: 200px; object-fit: cover; }
+        /* Replace with Appendix A styles */
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+        <a class="navbar-brand" href="/">Hot Properties</a>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" th:href="@{/properties}">Properties</a></li>
+                <li class="nav-item"><a class="nav-link active" th:href="@{/listings}">Manage Listings</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/messages}">Messages</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/logout}">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h1>Manage Listings</h1>
+    <a th:href="@{/properties/new}" class="btn btn-primary mb-3">Add New Property</a>
+    <div class="row">
+        <div th:each="property : ${properties}" class="col-md-4 mb-4">
+            <div class="card property-card">
+                <img th:if="${property.imagePath}" th:src="@{${property.imagePath}}" class="card-img-top" alt="Property Image">
+                <img th:unless="${property.imagePath}" src="/images/placeholder.jpg" class="card-img-top" alt="Placeholder">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${property.title}">Property Title</h5>
+                    <p class="card-text" th:text="${property.description}">Description</p>
+                    <a th:href="@{'/listings/edit/' + ${property.id}}" class="btn btn-secondary">Edit</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="bg-light text-center py-3 mt-5">
+    <p>© 2025 Hot Properties. All rights reserved.</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Buyer Dashboard - Hot Properties</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header>
+    <h1>Buyer Dashboard</h1>
+    <nav>
+        <a th:href="@{/buyer/dashboard}">Home</a> |
+        <a th:href="@{/buyer/favorites}">Favorites</a> |
+        <a th:href="@{/buyer/messages}">Messages</a> |
+        <a th:href="@{/logout}">Logout</a>
+    </nav>
+</header>
+<main>
+    <h2>Available Properties</h2>
+    <div th:if="${properties.isEmpty()}">
+        <p>No properties available at the moment.</p>
+    </div>
+    <div th:each="property : ${properties}">
+        <div class="property-card">
+            <h3 th:text="${property.title}">Property Title</h3>
+            <p>Price: $<span th:text="${property.price}">0.00</span></p>
+            <p>Location: <span th:text="${property.location}">Location</span></p>
+            <p>Size: <span th:text="${property.size}">0</span> sq ft</p>
+            <a th:href="@{/buyer/property/{id}(id=${property.id})}">View Details</a>
+            <form th:action="@{/buyer/favorite/{id}(id=${property.id})}" method="post">
+                <button type="submit">Add to Favorites</button>
+            </form>
+        </div>
+    </div>
+</main>
+</body>
+</html>
