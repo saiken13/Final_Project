@@ -52,17 +52,28 @@ public class UserAccountController {
         return "login";
     }
 
+
     @PostMapping("/login")
-public String processLogin(@ModelAttribute("user") User user, HttpServletResponse response, Model model) {
-    try {
-        Cookie jwtCookie = authService.loginAndCreateJwtCookieByEmail(user); // 🔍 Focus here
-        response.addCookie(jwtCookie);
-        return "redirect:/dashboard";
-    } catch (BadCredentialsException e) {
-        model.addAttribute("error", "Invalid email or password");
-        return "login";
+    public String processLogin(@ModelAttribute("user") User user, HttpServletResponse response, Model model) {
+        try {
+            Cookie jwtCookie = authService.loginAndCreateJwtCookieByEmail(user);
+
+            String cookieHeader = String.format("jwt=%s; Max-Age=%d; Path=/; HttpOnly; SameSite=Lax",
+                    jwtCookie.getValue(), jwtCookie.getMaxAge());
+
+            if (jwtCookie.getSecure()) {
+                cookieHeader += "; Secure";
+            }
+
+            response.setHeader("Set-Cookie", cookieHeader);
+            return "redirect:/dashboard";
+        } catch (BadCredentialsException e) {
+            model.addAttribute("error", "Invalid email or password");
+            return "login";
+        }
     }
-}
+
+
 
     
 

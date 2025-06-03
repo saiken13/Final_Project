@@ -33,7 +33,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public JwtResponse authenticateAndGenerateToken(User user) {
         try {
-            // Use email for authentication
             Authentication auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword())
             );
@@ -54,8 +53,9 @@ public class AuthServiceImpl implements AuthService {
         Cookie jwtCookie = new Cookie("jwt", jwtResponse.getToken());
         jwtCookie.setHttpOnly(true);
         jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(60 * 60); // 1 hour
-
+        jwtCookie.setMaxAge(60 * 60);
+        jwtCookie.setSecure(false);
+        jwtCookie.setDomain("localhost");
         return jwtCookie;
     }
 
@@ -66,18 +66,13 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void clearJwtCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie("jwt", "");
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(0);
-        cookie.setSecure(false); // set to true for HTTPS only
-        response.addCookie(cookie);
+        response.setHeader("Set-Cookie", "jwt=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax");
     }
 
     @Override
     public User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName(); // using email as username
+        String email = auth.getName();
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
