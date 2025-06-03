@@ -1,17 +1,11 @@
 package edu.hingu.project.services;
 
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -39,15 +33,15 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public JwtResponse authenticateAndGenerateToken(User user) {
         try {
+            // Use email for authentication
             Authentication auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword())
             );
             SecurityContextHolder.getContext().setAuthentication(auth);
 
-            UserDetails userDetails = (UserDetails) auth.getPrincipal();
-            String token = jwtUtil.generateToken(userDetails);
-
+            String token = jwtUtil.generateToken((org.springframework.security.core.userdetails.User) auth.getPrincipal());
             return new JwtResponse(token);
+
         } catch (AuthenticationException e) {
             throw new BadCredentialsException("Invalid email or password");
         }
@@ -55,58 +49,36 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public Cookie loginAndCreateJwtCookie(User user) throws BadCredentialsException {
-        return loginAndCreateJwtCookieByEmail(user);
-    }
+        JwtResponse jwtResponse = authenticateAndGenerateToken(user);
 
-    @Override
-    public Cookie loginAndCreateJwtCookieByEmail(User userInput) throws BadCredentialsException {
-        User user = userRepository.findByEmail(userInput.getEmail())
-            .orElseThrow(() -> new BadCredentialsException("Email not found"));
-    
-        if (!passwordEncoder.matches(userInput.getPassword(), user.getPassword())) {
-            throw new BadCredentialsException("Invalid password");
-        }
-    
-        UserDetails userDetails = new org.springframework.security.core.userdetails.User(
-            user.getEmail(),
-            user.getPassword(),
-            user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
-                .collect(Collectors.toList())
-        );
-    
-        String token = jwtUtil.generateToken(userDetails);
-    
-        Cookie jwtCookie = new Cookie("jwt", token);
+        Cookie jwtCookie = new Cookie("jwt", jwtResponse.getToken());
         jwtCookie.setHttpOnly(true);
         jwtCookie.setPath("/");
         jwtCookie.setMaxAge(60 * 60); // 1 hour
-    
+
         return jwtCookie;
     }
-    
-
 
     @Override
-    @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
+    public Cookie loginAndCreateJwtCookieByEmail(User user) throws BadCredentialsException {
+        return loginAndCreateJwtCookie(user);
+    }
+
+    @Override
     public void clearJwtCookie(HttpServletResponse response) {
         Cookie cookie = new Cookie("jwt", "");
         cookie.setPath("/");
         cookie.setHttpOnly(true);
         cookie.setMaxAge(0);
-        cookie.setSecure(true); // only for HTTPS
+        cookie.setSecure(false); // set to true for HTTPS only
         response.addCookie(cookie);
     }
 
     @Override
-        public User getCurrentUser() {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String email = auth.getName();
-            return userRepository.findByEmail(email)
+    public User getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName(); // using email as username
+        return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
-        }
-
-
-    @Autowired
-    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
-} 
+    }
+}

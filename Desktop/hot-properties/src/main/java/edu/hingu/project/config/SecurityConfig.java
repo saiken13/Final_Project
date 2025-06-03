@@ -45,20 +45,20 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.GET, "/register").permitAll()
-                .requestMatchers(HttpMethod.POST, "/register").permitAll()
-                .requestMatchers(HttpMethod.GET, "/login").permitAll()
-                .requestMatchers(HttpMethod.POST, "/login").permitAll()
-                .requestMatchers("/", "/index",
-                                 "/css/**", "/js/**", "/images/**", "/webjars/**",
-                                 "/profile-pictures/**").permitAll()
+                // ✅ Permit access to login and register
+                .requestMatchers(HttpMethod.GET, "/register", "/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/register", "/login").permitAll()
 
-                // 🔐 Use hasAuthority with "ROLE_" since roles are stored that way in DB
-                .requestMatchers("/dashboard", "/profile", "/settings")
-                .hasAnyAuthority("ROLE_USER", "ROLE_MANAGER", "ROLE_ADMIN")
+                // ✅ Public resources
+                .requestMatchers("/", "/index", "/css/**", "/js/**", "/images/**", "/webjars/**", "/profile-pictures/**").permitAll()
+
+                // ✅ Protect by authorities with ROLE_ prefix (MUST match granted authorities)
                 .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers("/agent/**").hasAuthority("ROLE_AGENT")
                 .requestMatchers("/buyer/**").hasAuthority("ROLE_BUYER")
+
+                // ✅ Generic protected routes
+                .requestMatchers("/dashboard", "/profile", "/settings").hasAnyAuthority("ROLE_USER", "ROLE_MANAGER", "ROLE_ADMIN")
 
                 .anyRequest().authenticated()
             )

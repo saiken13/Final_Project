@@ -30,10 +30,11 @@ public class UserRoleInitializer {
     @PostConstruct
     public void init() {
         if (userRepository.count() == 0 && roleRepository.count() == 0) {
-                Role roleUser = new Role("ROLE_USER");
-                Role roleAdmin = new Role("ROLE_ADMIN");
-                Role roleManager = new Role("ROLE_MANAGER");
-                
+
+            // ✅ Store roles as plain names (NOT prefixed with ROLE_)
+            Role roleUser = new Role("USER");
+            Role roleAdmin = new Role("ADMIN");
+            Role roleManager = new Role("MANAGER");
 
             roleRepository.saveAll(List.of(roleUser, roleAdmin, roleManager));
 

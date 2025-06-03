@@ -35,9 +35,12 @@
 
         <label>Roles</label>
         <ul class="no-bullets roles-list">
-            <li><label><input class="checkbox-margin" type="checkbox" name="selectedRoles" value="ROLE_USER"/> User</label></li>
-            <li><label><input class="checkbox-margin" type="checkbox" name="selectedRoles" value="ROLE_MANAGER"/> Manager</label></li>
-            <li><label><input class="checkbox-margin" type="checkbox" name="selectedRoles" value="ROLE_ADMIN"/> Admin</label></li>
+            <ul class="no-bullets roles-list">
+                <li><label><input class="checkbox-margin" type="checkbox" name="selectedRoles" value="ROLE_USER"/> USER</label></li>
+                <li><label><input class="checkbox-margin" type="checkbox" name="selectedRoles" value="ROLE_MANAGER"/> MANAGER</label></li>
+                <li><label><input class="checkbox-margin" type="checkbox" name="selectedRoles" value="ROLE_ADMIN"/> ADMIN</label></li>
+            </ul>
+            
         </ul>
 
         <button class="submit-btn" type="submit">Register</button>

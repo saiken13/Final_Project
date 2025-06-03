@@ -111,21 +111,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-public User registerNewUser(User user, List<String> roleNames) {
-    // Encode password
+    public User registerNewUser(User user, List<String> roleNames) {
+    if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+        throw new IllegalArgumentException("Email already exists.");
+    }
+
     user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-    // Assign roles
     Set<Role> roles = roleNames.stream()
-        .map(roleName -> roleRepository.findByName(roleName)
-            .orElseThrow(() -> new RuntimeException("Role not found: " + roleName)))
+        .map(name -> roleRepository.findByName(name)
+            .orElseThrow(() -> new IllegalArgumentException("Role not found: " + name)))
         .collect(Collectors.toSet());
 
     user.setRoles(roles);
 
-    // Save user
     return userRepository.save(user);
 }
+
+
 
 
     @Override
