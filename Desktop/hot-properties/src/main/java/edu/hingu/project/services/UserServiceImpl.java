@@ -39,9 +39,9 @@ public class UserServiceImpl implements UserService {
 
     private CurrentUserContext getCurrentUserContext() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        String email = auth.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
         return new CurrentUserContext(user, auth);
     }
 
@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
         if (isManager) {
             List<User> currentEmployees = userRepository.findByManager(user);
             List<User> availableUsers = userRepository.findByManagerIsNull().stream()
-                    .filter(u -> !u.getUsername().equals(user.getUsername()))
+                    .filter(u -> !u.getEmail().equals(user.getEmail()))
                     .collect(Collectors.toList());
 
             model.addAttribute("currentEmployees", currentEmployees);
@@ -81,7 +81,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateUserSettings(User updatedUser, String password, List<Long> addIds, List<Long> removeIds) {
-        User user = getCurrentUserContext().user();
+        User user = getCurrentUser();
 
         user.setFirstName(updatedUser.getFirstName());
         user.setLastName(updatedUser.getLastName());
@@ -112,24 +112,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User registerNewUser(User user, List<String> roleNames) {
-    if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-        throw new IllegalArgumentException("Email already exists.");
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Email already exists.");
+        }
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        Set<Role> roles = roleNames.stream()
+                .map(name -> roleRepository.findByName(name)
+                        .orElseThrow(() -> new IllegalArgumentException("Role not found: " + name)))
+                .collect(Collectors.toSet());
+
+        user.setRoles(roles);
+        return userRepository.save(user);
     }
-
-    user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-    Set<Role> roles = roleNames.stream()
-        .map(name -> roleRepository.findByName(name)
-            .orElseThrow(() -> new IllegalArgumentException("Role not found: " + name)))
-        .collect(Collectors.toSet());
-
-    user.setRoles(roles);
-
-    return userRepository.save(user);
-}
-
-
-
 
     @Override
     public List<User> getAllUsers() {
@@ -138,7 +134,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getTeamForCurrentManager() {
-        return userRepository.findByManager(getCurrentUserContext().user());
+        return userRepository.findByManager(getCurrentUser());
     }
 
     @Override
@@ -197,5 +193,4 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
-
 }

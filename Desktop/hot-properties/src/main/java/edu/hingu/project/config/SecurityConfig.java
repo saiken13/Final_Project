@@ -45,22 +45,20 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
             .authorizeHttpRequests(auth -> auth
-                // ✅ Permit access to login and register
-                .requestMatchers(HttpMethod.GET, "/register", "/login").permitAll()
-                .requestMatchers(HttpMethod.POST, "/register", "/login").permitAll()
+            .requestMatchers(HttpMethod.GET, "/register", "/login").permitAll()
+            .requestMatchers(HttpMethod.POST, "/register", "/login").permitAll()
 
-                // ✅ Public resources
-                .requestMatchers("/", "/index", "/css/**", "/js/**", "/images/**", "/webjars/**", "/profile-pictures/**").permitAll()
+            .requestMatchers("/", "/index", "/css/**", "/js/**", "/images/**", "/webjars/**", "/profile-pictures/**").permitAll()
 
-                // ✅ Protect by authorities with ROLE_ prefix (MUST match granted authorities)
-                .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
-                .requestMatchers("/agent/**").hasAuthority("ROLE_AGENT")
-                .requestMatchers("/buyer/**").hasAuthority("ROLE_BUYER")
+            // FIXED role mappings to actual endpoints
+            .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+            .requestMatchers("/manager/**").hasAuthority("ROLE_MANAGER")
+            .requestMatchers("/browse", "/favorites").hasAuthority("ROLE_USER")
 
-                // ✅ Generic protected routes
-                .requestMatchers("/dashboard", "/profile", "/settings").hasAnyAuthority("ROLE_USER", "ROLE_MANAGER", "ROLE_ADMIN")
+            // Generic protected routes
+            .requestMatchers("/dashboard", "/profile", "/settings").hasAnyAuthority("ROLE_USER", "ROLE_MANAGER", "ROLE_ADMIN")
 
-                .anyRequest().authenticated()
+            .anyRequest().authenticated()
             )
 
             .addFilterBefore(globalRateLimiterFilter, UsernamePasswordAuthenticationFilter.class)
