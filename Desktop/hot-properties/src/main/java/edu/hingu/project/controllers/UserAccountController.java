@@ -98,14 +98,16 @@ public class UserAccountController {
         return "profile";
     }
 
-    @GetMapping("/settings")
-    @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
-    public String showSettings(Model model) {
-        userService.prepareSettingsModel(model);
-        return "account_settings";
+    @GetMapping("/edit-profile")
+    @PreAuthorize("isAuthenticated()")
+    public String showEditProfileForm(Model model) {
+        User currentUser = userService.getCurrentUser();
+        model.addAttribute("user", currentUser);
+        return "edit-profile"; 
     }
 
-    @PostMapping("/settings")
+
+    @PostMapping("/edit-profile")
     @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
     public String updateSettings(@ModelAttribute("user") User updatedUser,
                                  @RequestParam(required = false) String password,
@@ -132,7 +134,7 @@ public class UserAccountController {
         } catch (Exception ex) {
             redirectAttributes.addFlashAttribute("errorMessage", "Failed to update account: " + ex.getMessage());
         }
-        return "redirect:/settings";
+        return "redirect:/profile";
     }
 
     @PreAuthorize("hasRole('ADMIN')")

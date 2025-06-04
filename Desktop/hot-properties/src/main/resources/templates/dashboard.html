@@ -1,62 +1,123 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-
 <head>
     <meta charset="UTF-8">
     <title>Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .dashboard-container {
-            max-width: 800px;
-            margin: 50px auto;
+        body {
+            background: url('/images/house-bg.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+        }
+        .dashboard-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh;
+        }
+        .dashboard-card {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .dashboard-card h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .dashboard-card small {
+            display: block;
+            margin-bottom: 25px;
+            font-size: 14px;
+            color: gray;
+        }
+        .dashboard-links {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .dashboard-links a {
+            display: block;
+            margin: 8px 0;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .dashboard-links a:hover {
+            text-decoration: underline;
+        }
+        .message-badge {
+            display: inline-block;
+            background-color: red;
+            color: white;
+            font-size: 0.8rem;
+            border-radius: 10px;
+            padding: 2px 8px;
+            margin-left: 8px;
+        }
+        .logout-btn {
+            margin-top: 20px;
+        }
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #f8f9fa;
         }
     </style>
 </head>
-
 <body>
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+
+<nav class="navbar navbar-light bg-light">
     <div class="container">
-        <a class="navbar-brand" href="/">Hot Properties</a>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link active" th:href="@{/dashboard}">Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/profile}">Profile</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/settings}">Settings</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/logout}">Logout</a></li>
-            </ul>
-        </div>
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="/images/logo.jpeg" height="48" alt="Logo" class="me-2">
+            <strong>Hot Properties</strong>
+        </a>
     </div>
 </nav>
 
-<div class="container dashboard-container">
-    <h1 class="mb-4">Welcome, <span th:text="${user.firstName}">User</span>!</h1>
+<div class="dashboard-wrapper">
+    <div class="dashboard-card">
+        <h2>Welcome, <span th:text="${user.firstName}">User</span>!</h2>
+        <small>Your role:
+            <span sec:authorize="hasRole('ROLE_ADMIN')">ADMIN</span>
+            <span sec:authorize="hasRole('ROLE_MANAGER')">MANAGER</span>
+            <span sec:authorize="hasRole('ROLE_AGENT')">AGENT</span>
+            <span sec:authorize="hasRole('ROLE_USER')">USER</span>
+        </small>
 
-    <!-- Agent Panel -->
-    <div sec:authorize="hasRole('ROLE_AGENT')">
-        <h3>Agent Panel</h3>
-        <a th:href="@{/listings}" class="btn btn-primary mb-3">Manage Listings</a>
-    </div>
+        <div class="dashboard-links">
+            <a th:href="@{/profile}">My Profile</a>
 
-    <!-- Buyer Panel -->
-    <div sec:authorize="hasRole('ROLE_BUYER')">
-        <h3>Buyer Panel</h3>
-        <a th:href="@{/browse}" class="btn btn-primary mb-3">Browse Properties</a>
-    </div>
+            <div sec:authorize="hasRole('ROLE_AGENT')">
+                <a th:href="@{/listings}">Manage Listings</a>
+                <a th:href="@{/properties/new}">Add New Property</a>
+                <a th:href="@{/messages}">
+                    View Messages <span class="message-badge">3</span> <!-- Placeholder -->
+                </a>
+            </div>
 
-    <!-- Admin Panel -->
-    <div sec:authorize="hasRole('ROLE_ADMIN')">
-        <h3>Admin Panel</h3>
-        <a th:href="@{/admin/users}" class="btn btn-danger mb-3">Manage Users</a>
-    </div>
+            <div sec:authorize="hasRole('ROLE_ADMIN')">
+                <a th:href="@{/admin/users}">Manage Users</a>
+            </div>
 
-    <!-- Generic Info -->
-    <div class="mt-4">
-        <p>This dashboard content is personalized based on your role. Use the menu to navigate through your account.</p>
+            <div sec:authorize="hasRole('ROLE_MANAGER')">
+                <a th:href="@{/manager/team}">My Team</a>
+            </div>
+
+            <div sec:authorize="hasRole('ROLE_USER')">
+                <a th:href="@{/browse}">Browse Properties</a>
+            </div>
+        </div>
+
+        <a th:href="@{/logout}" class="btn btn-danger logout-btn">Logout</a>
     </div>
 </div>
 
-<footer class="bg-light text-center py-3 mt-5">
+<footer>
     <p>© 2025 Hot Properties. All rights reserved.</p>
 </footer>
 

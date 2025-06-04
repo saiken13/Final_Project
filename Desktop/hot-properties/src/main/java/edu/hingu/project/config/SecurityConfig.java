@@ -43,27 +43,18 @@ public class SecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
             .authorizeHttpRequests(auth -> auth
-            .requestMatchers(HttpMethod.GET, "/register", "/login").permitAll()
-            .requestMatchers(HttpMethod.POST, "/register", "/login").permitAll()
-
-            .requestMatchers("/", "/index", "/css/**", "/js/**", "/images/**", "/webjars/**", "/profile-pictures/**").permitAll()
-
-            // FIXED role mappings to actual endpoints
-            .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
-            .requestMatchers("/manager/**").hasAuthority("ROLE_MANAGER")
-            .requestMatchers("/browse", "/favorites").hasAuthority("ROLE_USER")
-
-            // Generic protected routes
-            .requestMatchers("/dashboard", "/profile", "/settings").hasAnyAuthority("ROLE_USER", "ROLE_MANAGER", "ROLE_ADMIN")
-
-            .anyRequest().authenticated()
+                .requestMatchers(HttpMethod.GET, "/register", "/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/register", "/login").permitAll()
+                .requestMatchers("/", "/index", "/css/**", "/js/**", "/images/**", "/webjars/**", "/profile-pictures/**").permitAll()
+                .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers("/manager/**").hasAuthority("ROLE_MANAGER")
+                .requestMatchers("/browse", "/favorites").hasAuthority("ROLE_USER")
+                .requestMatchers("/dashboard", "/profile", "/settings").hasAnyAuthority("ROLE_USER", "ROLE_MANAGER", "ROLE_ADMIN")
+                .anyRequest().authenticated()
             )
-
             .addFilterBefore(globalRateLimiterFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-
             .httpBasic(Customizer.withDefaults())
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
@@ -74,7 +65,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder encoder) throws Exception {
+    public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder encoder) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(encoder);

@@ -5,79 +5,101 @@
     <title>Hot Properties - Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .form-container {
-            max-width: 500px;
-            margin: 50px auto;
-            background-image: url('/images/house-bg.png'); /* Replace with your image path */
-            background-size: cover;
-            background-position: center;
-            padding: 20px;
-            border-radius: 10px;
-            position: relative;
-        }
-        .form-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
+        html, body {
             height: 100%;
-            background: rgba(255, 255, 255, 0.8); /* Overlay for text readability */
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body {
+            background: url('/images/house-bg.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-box {
+            max-width: 400px;
+            background-color: white;
+            padding: 30px 25px;
             border-radius: 10px;
-            z-index: 0;
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
         }
-        .form-content {
-            position: relative;
-            z-index: 1;
+
+        .login-box h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
         }
-        .navbar-brand {
-            font-size: 1.5rem;
+
+        .form-control {
+            margin-bottom: 15px;
+        }
+
+        .login-btn {
+            width: 100%;
             font-weight: bold;
+        }
+
+        .register-link {
+            margin-top: 15px;
+            font-size: 0.95rem;
+        }
+
+        .register-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .navbar-brand img {
+            height: 80px; /* ✅ Increased logo size */
+            margin-right: 10px;
+        }
+
+        footer {
+            background-color: #f8f9fa;
+            padding: 1rem 0;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+
+<nav class="navbar navbar-light bg-light">
     <div class="container">
-        <a class="navbar-brand" href="/">
-            <img src="/images/logo.jpeg" width="30" height="30" class="d-inline-block align-top" alt="">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="/images/logo.jpeg" alt="Logo">
+            <span style="font-weight: bold;">Hot Properties</span>
         </a>
-        <a class="navbar-brand" th:href="@{/}">Hot Properties</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item"><a class="nav-link" style="font-weight: bold; color: black;" th:href="@{/properties}">Properties</a></li>
-                <!-- <li class="nav-item"><a class="nav-link active" th:href="@{/login}">Login</a></li> -->
-                <!-- <li class="nav-item"><a class="nav-link" th:href="@{/register}">Register</a></li> -->
-            </ul>
-        </div>
     </div>
 </nav>
 
-<div class="container">
-    <div class="form-container">
-        <div class="form-overlay"></div>
-        <div class="form-content">
-            <h1>Login</h1>
-            <!-- <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div> -->
-
-            <form th:action="@{/login}" th:object="${user}" method="post">
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label> 
-                    <input type="email" class="form-control" th:field="*{email}" placeholder="Enter your Email ID" required>
-                </div>
-                <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password" class="form-control" th:field="*{password}" placeholder="Enter your password" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Login</button>
-            </form>
+<div class="main-content">
+    <div class="login-box">
+        <h1>Login</h1>
+        <form th:action="@{/login}" th:object="${user}" method="post">
+            <input type="email" class="form-control" th:field="*{email}" placeholder="Email" required>
+            <input type="password" class="form-control" th:field="*{password}" placeholder="Password" required>
+            <button type="submit" class="btn btn-primary login-btn">Login</button>
+        </form>
+        <div class="register-link">
+            Don’t have an account? <a th:href="@{/register}">Register here.</a>
         </div>
     </div>
 </div>
 
-<footer class="bg-light text-center py-3 mt-5">
+<footer>
     <p>© 2025 Hot Properties. All rights reserved.</p>
 </footer>
 
