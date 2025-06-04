@@ -1,144 +1,112 @@
-/* Ensure the full page uses flexbox to center content */
+/* Existing styles from landing.html */
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.hero-section {
+    background-image: url('/images/static_images/house-bg.png'); /* Replace with your image path */
+    background-size: cover;
+    background-position: center;
+    height: 500px;
+    color: rgb(0, 0, 0);
     display: flex;
-    justify-content: center; /* centers horizontally */
-    align-items: flex-start; /* adjust vertical alignment as needed */
-    min-height: 100vh; /* ensure full viewport height */
-}
-
-form label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: bold;
-    text-align: left; /* ✅ ensure left alignment */
-}
-
-.login-container {
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    width: 500px;
-    margin-top: 80px;
-    padding: 25px;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    position: relative;
 }
 
-.roles-list {
-    list-style-type: none;
-    padding-left: 0;
-    margin: 0;
-}
-
-.roles-list li {
-    margin-bottom: 4px; /* or 0 if you want no spacing */
-}
-
-h1 {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
-}
-
-.form-select {
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    padding: 8px;
-    margin-bottom: 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.5); /* Overlay for text readability */
 }
 
-.success {
-    color: green;
-    font-size: 0.95em;
-    margin-bottom: 14px;
+.hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.hero-content h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.hero-content p {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.btn-primary {
+    font-size: 1.1rem;
+    padding: 10px 20px;
+}
+
+.features-section {
+    padding: 50px 0;
+    background-color: #f8f9fa;
+}
+
+.features-section h3 {
     text-align: center;
+    margin-bottom: 2rem;
 }
-.failure {
-    color: red;
-    font-size: 0.95em;
-    margin-bottom: 14px;
+
+.feature-card {
     text-align: center;
-}
-input[type="email"],
-input[type="text"],
-input[type="password"] {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    padding: 20px;
 }
 
-ul.no-bullets {
-    list-style-type: none;
-    padding-left: 0;
-    margin: 0;
+.feature-card img {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 1rem;
 }
 
-.error-message {
-    color: red;
-    font-size: 0.9em;
-    margin-bottom: 10px;
+.feature-card p {
+    font-size: 1rem;
+    color: #6c757d;
 }
 
-button {
-    width: 100%;
-    padding: 10px;
-    background-color: #007BFF;
+footer {
+    background-color: #343a40;
     color: white;
-    font-weight: bold;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #0056b3;
-}
-
-ul li {
-  margin-bottom: 10px;
-}
-
-table {
-    border-spacing: 0 12px; /* vertical spacing between rows */
-
-        border-collapse: collapse; /* ✅ ensures borders align */
-        width: 100%;
-}
-
-th, td {
-    padding: 10px 10px;
-    vertical-align: middle;
-}
-
-tr {
-    border-bottom: 1px solid #ccc;
-}
-
-.back-link {
+    padding: 20px 0;
     text-align: center;
-    margin-top: 30px;
 }
 
-.centered-image {
-    display: block;
-    margin: 0 auto 20px;
-    max-width: 75%;
-    height: auto;
+/* New styles for register.html */
+.form-container {
+    max-width: 500px;
+    margin: 50px auto;
+    background-image: url('/images/static_images/house-bg.png'); /* Replace with your image path */
+    background-size: cover;
+    background-position: center;
+    padding: 20px;
+    border-radius: 10px;
+    position: relative;
 }
 
-.centered-link { text-align: center; margin-top: 20px; }
-.checkbox-margin { margin-right: 6px; }
-.profile-table { width: 100%; margin-top: 20px; border-collapse: collapse; }
-.section-spacing { margin-top: 20px; }
+.form-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8); /* Overlay for text readability */
+    border-radius: 10px;
+    z-index: 0;
+}
+
+.form-content {
+    position: relative;
+    z-index: 1;
+}
