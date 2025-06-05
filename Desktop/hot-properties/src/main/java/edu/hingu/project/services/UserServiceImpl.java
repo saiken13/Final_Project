@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,8 +19,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
+import edu.hingu.project.entities.Property;
 import edu.hingu.project.entities.Role;
 import edu.hingu.project.entities.User;
+import edu.hingu.project.repositories.PropertyRepository;
 import edu.hingu.project.repositories.RoleRepository;
 import edu.hingu.project.repositories.UserRepository;
 import edu.hingu.project.utils.CurrentUserContext;
@@ -30,6 +33,9 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private PropertyRepository propertyRepository;
 
     public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -192,5 +198,23 @@ public class UserServiceImpl implements UserService {
         String email = auth.getName();
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+    }
+
+    @Override
+    public List<Property> getPropertiesForCurrentUser() {
+        User user = getCurrentUser();
+        return propertyRepository.findByOwner(user);
+    }
+
+    @Override
+    public List<Property> getPropertiesByUser(User user) {
+        return propertyRepository.findByOwner(user);
+    }
+
+    @Override
+    public void prepareManagePropertiesModel(Model model) {
+        User currentUser = getCurrentUser();
+        List<Property> properties = propertyRepository.findByOwner(currentUser);
+        model.addAttribute("properties", properties);
     }
 }

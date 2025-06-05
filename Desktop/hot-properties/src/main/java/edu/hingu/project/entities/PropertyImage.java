@@ -8,6 +8,7 @@ import jakarta.persistence.ManyToOne;
 
 @Entity
 public class PropertyImage {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -17,13 +18,26 @@ public class PropertyImage {
     @ManyToOne
     private Property property;
 
-    public PropertyImage() {}
+    public PropertyImage() {
+    }
 
-    public Long getId() { return id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getImageFileName() { return imageFileName; }
-    public void setImageFileName(String imageFileName) { this.imageFileName = imageFileName; }
+    public String getImageFileName() {
+        return imageFileName;
+    }
 
-    public Property getProperty() { return property; }
-    public void setProperty(Property property) { this.property = property; }
+    public void setImageFileName(String imageFileName) {
+        this.imageFileName = imageFileName;
+    }
+
+    public Property getProperty() {
+        return property;
+    }
+
+    public void setProperty(Property property) {
+        this.property = property;
+    }
 }

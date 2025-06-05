@@ -37,6 +37,8 @@ public class Property {
     @Column(nullable = false)
     private int size;
 
+  
+
     // owner is nullable for now since CSV import won't set this
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -134,5 +136,17 @@ public class Property {
     public void setMessages(List<Message> messages) {
         this.messages = messages;
     }
+
+    @Column(nullable = true)
+    private String zipCode;
+
+    public String getZipCode() {
+        return zipCode;
+    }
+
+    public void setZipCode(String zipCode) {
+        this.zipCode = zipCode;
+}
+
 }
 

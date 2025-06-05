@@ -19,6 +19,8 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private PropertyRepository propertyRepository;
 
+
+
     @Override
     public void run(String... args) throws Exception {
         if (propertyRepository.count() == 0) {

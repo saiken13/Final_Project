@@ -52,7 +52,6 @@ public class UserAccountController {
         return "login";
     }
 
-
     @PostMapping("/login")
     public String processLogin(@ModelAttribute("user") User user, HttpServletResponse response, Model model) {
         try {
@@ -72,10 +71,6 @@ public class UserAccountController {
             return "login";
         }
     }
-
-
-
-    
 
     @GetMapping("/logout")
     @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
@@ -103,9 +98,8 @@ public class UserAccountController {
     public String showEditProfileForm(Model model) {
         User currentUser = userService.getCurrentUser();
         model.addAttribute("user", currentUser);
-        return "edit-profile"; 
+        return "edit-profile";
     }
-
 
     @PostMapping("/edit-profile")
     @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
@@ -117,7 +111,6 @@ public class UserAccountController {
                                  RedirectAttributes redirectAttributes) {
         try {
             User actualUser = userService.getCurrentUser();
-
             actualUser.setFirstName(updatedUser.getFirstName());
             actualUser.setLastName(updatedUser.getLastName());
             actualUser.setEmail(updatedUser.getEmail());
@@ -135,6 +128,26 @@ public class UserAccountController {
             redirectAttributes.addFlashAttribute("errorMessage", "Failed to update account: " + ex.getMessage());
         }
         return "redirect:/profile";
+    }
+
+    @GetMapping("/uploads/{filename:.+}")
+    @ResponseBody
+    public ResponseEntity<Resource> serveImage(@PathVariable String filename) {
+        try {
+            Path filePath = Paths.get("uploads").resolve(filename).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (resource.exists() && resource.isReadable()) {
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                        .contentType(MediaTypeFactory.getMediaType(resource).orElse(MediaType.APPLICATION_OCTET_STREAM))
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -173,7 +186,6 @@ public class UserAccountController {
 
             redirectAttributes.addFlashAttribute("successMessage", "Registration successful.");
             return "redirect:/login";
-
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Registration failed: " + e.getMessage());
             return "redirect:/register";

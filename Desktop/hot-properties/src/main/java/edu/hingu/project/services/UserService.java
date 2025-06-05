@@ -7,6 +7,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
+import edu.hingu.project.entities.Property;
 import edu.hingu.project.entities.Role;
 import edu.hingu.project.entities.User;
 
@@ -44,4 +45,15 @@ public interface UserService {
     Optional<User> getUserById(Long id);
 
     void deleteUser(Long id);
+
+    // ✅ For populating "Manage Properties" page with current user's listings
+    @PreAuthorize("hasRole('MANAGER')")
+    void prepareManagePropertiesModel(Model model);
+
+    // ✅ Get all properties listed by a specific user (used internally)
+    List<Property> getPropertiesByUser(User user);
+
+    // ✅ For current authenticated user with role USER
+    @PreAuthorize("hasRole('USER')")
+    List<Property> getPropertiesForCurrentUser();
 }

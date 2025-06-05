@@ -1,40 +1,27 @@
 package edu.hingu.project.services;
 
-import edu.hingu.project.entities.Property;
-import edu.hingu.project.repositories.PropertyRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
 
-@Service
-public class PropertyService {
+import edu.hingu.project.entities.Property;
+import edu.hingu.project.entities.User;
 
-    @Autowired
-    private PropertyRepository propertyRepo;
+public interface PropertyService {
 
-    public List<Property> getAllProperties() {
-        return propertyRepo.findAll();
-    }
+    List<Property> getAllProperties();
 
-    public Optional<Property> getById(Long id) {
-        return propertyRepo.findById(id);
-    }
+    Optional<Property> getById(Long id);
 
-    public Property saveProperty(Property property) {
-        return propertyRepo.save(property);
-    }
+    Property saveProperty(Property property);
 
-    public void deleteProperty(Long id) {
-        propertyRepo.deleteById(id);
-    }
+    void deleteProperty(Long id);
 
-    public List<Property> searchByLocation(String location) {
-        return propertyRepo.findByLocationContainingIgnoreCase(location);
-    }
+    List<Property> searchByLocation(String location);
 
-    public List<Property> filterByPrice(Double min, Double max) {
-        return propertyRepo.findByPriceBetween(min, max);
-    }
+    List<Property> filterByPrice(Double minPrice, Double maxPrice);
+
+    List<Property> getPropertiesByOwner(User owner);
+
+    // ✅ Add this declaration to fix the error
+    List<Property> filterProperties(String zip, Integer minSqft, Double minPrice, Double maxPrice, String sort);
 }
