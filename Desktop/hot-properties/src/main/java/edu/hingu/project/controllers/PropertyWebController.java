@@ -1,6 +1,8 @@
 package edu.hingu.project.controllers;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,22 +34,18 @@ public class PropertyWebController {
         this.userService = userService;
     }
 
-    // 🔍 Browse properties page
     @GetMapping("/browse")
     public String browse(@RequestParam(required = false) String location,
-                     @RequestParam(required = false) Integer minSqft,
-                     @RequestParam(required = false) Double minPrice,
-                     @RequestParam(required = false) Double maxPrice,
-                     @RequestParam(required = false) String sort,
-                     Model model) {
-    List<Property> filtered = propertyService.filterProperties(location, minSqft, minPrice, maxPrice, sort);
-    model.addAttribute("properties", filtered);
-    return "browse";
-}
+                         @RequestParam(required = false) Integer minSqft,
+                         @RequestParam(required = false) Double minPrice,
+                         @RequestParam(required = false) Double maxPrice,
+                         @RequestParam(required = false) String sort,
+                         Model model) {
+        List<Property> filtered = propertyService.filterProperties(location, minSqft, minPrice, maxPrice, sort);
+        model.addAttribute("properties", filtered);
+        return "browse";
+    }
 
-
-
-    // 🏡 View property details and load images
     @GetMapping("/details/{id}")
     @PreAuthorize("permitAll()")
     public String viewProperty(@PathVariable Long id, Model model) {
@@ -57,16 +55,19 @@ public class PropertyWebController {
             return "redirect:/browse";
         }
 
-        // Prepare list of image paths from static folder
-        String folder = property.getImageFolder(); // e.g. "1741 N Mozart St"
+        // ❌ Don't alter folder name — it must match what's on disk
+        String folder = property.getImageFolder();
         List<String> imagePaths = new ArrayList<>();
 
         try {
             Path imageDir = Paths.get("src/main/resources/static/images/property-images/" + folder);
+            System.out.println("Looking for images in: " + imageDir.toAbsolutePath()); // ✅ Debug log
             if (Files.exists(imageDir)) {
                 Files.list(imageDir).forEach(path -> {
                     String filename = path.getFileName().toString();
-                    imagePaths.add("/images/property-images/" + folder + "/" + filename);
+                    String encodedFolder = URLEncoder.encode(folder, StandardCharsets.UTF_8);
+                    String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8);
+                    imagePaths.add("/images/property-images/" + encodedFolder + "/" + encodedFilename);
                 });
             }
         } catch (IOException e) {
@@ -78,7 +79,7 @@ public class PropertyWebController {
         return "property-details";
     }
 
-    // 🛠 Manage properties
+
     @GetMapping("/properties/manage")
     @PreAuthorize("hasRole('MANAGER')")
     public String showManageProperties(Model model) {
@@ -90,12 +91,10 @@ public class PropertyWebController {
     @PreAuthorize("hasRole('MANAGER')")
     public String showEditForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         Property property = propertyService.getById(id).orElse(null);
-
         if (property == null || !property.getOwner().getId().equals(userService.getCurrentUser().getId())) {
             redirectAttributes.addFlashAttribute("errorMessage", "Unauthorized or Property not found");
             return "redirect:/properties/manage";
         }
-
         model.addAttribute("property", property);
         return "edit-property";
     }
@@ -106,7 +105,6 @@ public class PropertyWebController {
                                  @ModelAttribute("property") Property updatedProperty,
                                  RedirectAttributes redirectAttributes) {
         Property property = propertyService.getById(id).orElse(null);
-
         if (property == null || !property.getOwner().getId().equals(userService.getCurrentUser().getId())) {
             redirectAttributes.addFlashAttribute("errorMessage", "Unauthorized or Property not found");
             return "redirect:/properties/manage";
@@ -117,10 +115,9 @@ public class PropertyWebController {
         property.setPrice(updatedProperty.getPrice());
         property.setLocation(updatedProperty.getLocation());
         property.setSize(updatedProperty.getSize());
-        property.setImageFolder(updatedProperty.getImageFolder()); // ✅ Optional if editable
+        property.setImageFolder(updatedProperty.getImageFolder());
 
         propertyService.saveProperty(property);
-
         redirectAttributes.addFlashAttribute("successMessage", "Property updated successfully.");
         return "redirect:/properties/manage";
     }
@@ -129,7 +126,6 @@ public class PropertyWebController {
     @PreAuthorize("hasRole('MANAGER')")
     public String deleteProperty(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         Property property = propertyService.getById(id).orElse(null);
-
         if (property == null || !property.getOwner().getId().equals(userService.getCurrentUser().getId())) {
             redirectAttributes.addFlashAttribute("errorMessage", "Unauthorized or Property not found");
             return "redirect:/properties/manage";

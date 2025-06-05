@@ -1,6 +1,5 @@
 package edu.hingu.project.utils;
 
-
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Map;
@@ -29,10 +28,15 @@ public class GlobalRateLimiterFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String ip = request.getRemoteAddr();
-        Instant now = Instant.now();
 
-        RequestWindow window = ipRequests.computeIfAbsent(ip,
-                k -> new RequestWindow());
+        // ✅ Bypass rate limiting for local development
+        if ("127.0.0.1".equals(ip) || "::1".equals(ip)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        Instant now = Instant.now();
+        RequestWindow window = ipRequests.computeIfAbsent(ip, k -> new RequestWindow());
 
         synchronized (window) {
             if (now.isAfter(window.windowStart.plusMillis(WINDOW_MS))) {
@@ -50,11 +54,12 @@ public class GlobalRateLimiterFilter extends OncePerRequestFilter {
                       "error": "Rate Limit Exceeded",
                       "message": "Exceeded %d calls per %d seconds. Please slow down."
                     }
-                """, MAX_REQUESTS, WINDOW_MS/1000);
+                """, MAX_REQUESTS, WINDOW_MS / 1000);
                 response.getWriter().write(s);
                 return;
             }
         }
+
         filterChain.doFilter(request, response);
     }
 

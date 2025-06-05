@@ -28,22 +28,25 @@
     <p><strong>Size:</strong> <span th:text="${property.size}">0</span> sq. ft.</p>
     <p><strong>Description:</strong> <span th:text="${property.description}">Description</span></p>
 
-    <!-- 🖼 Image carousel -->
     <div th:if="${imagePaths != null and !imagePaths.isEmpty()}">
         <div id="propertyCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
             <div class="carousel-inner">
-                <div class="carousel-item active" th:each="path, stat : ${imagePaths}" th:classappend="${stat.index == 0} ? 'active'">
-                    <img th:src="@{${path}}" class="d-block w-100" style="max-height: 400px; object-fit: cover;" alt="Property Image">
+                <div th:each="path, stat : ${imagePaths}"
+                     th:class="'carousel-item' + (stat.index == 0 ? ' active' : '')">
+                    <img th:src="${path}" class="d-block w-100" style="max-height: 400px; object-fit: cover;" alt="Property Image">
                 </div>
             </div>
             <button class="carousel-control-prev" type="button" data-bs-target="#propertyCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon"></span>
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
             </button>
             <button class="carousel-control-next" type="button" data-bs-target="#propertyCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon"></span>
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
             </button>
         </div>
     </div>
+
     <div th:unless="${imagePaths != null and !imagePaths.isEmpty()}">
         <img src="/images/placeholder.jpg" class="img-fluid mb-4" alt="No image available">
     </div>

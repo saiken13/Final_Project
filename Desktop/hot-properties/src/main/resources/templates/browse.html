@@ -32,7 +32,6 @@
 <div class="container mt-5">
     <h1 class="mb-4">Available Properties (<span th:text="${properties.size()}">0</span>)</h1>
 
-    <!-- 🔍 Filter Form -->
     <form class="row g-3 mb-4" method="get" th:action="@{/browse}">
         <div class="col-md-2">
             <input type="text" class="form-control" name="zip" placeholder="Zip Code" th:value="${param.zip}">
@@ -59,17 +58,10 @@
         </div>
     </form>
 
-    <!-- 🏡 Property Cards -->
     <div class="row">
         <div th:each="property : ${properties}" class="col-md-4 mb-4">
             <div class="card property-card shadow-sm">
-                <img th:if="${property.images?.size() > 0}"
-                     th:src="@{'/uploads/' + ${property.images[0].imageFileName}}"
-                     class="card-img-top" alt="Property Image">
-                <img th:unless="${property.images?.size() > 0}"
-                     src="/images/placeholder.jpg"
-                     class="card-img-top" alt="Placeholder">
-
+                <img th:src="@{${property.thumbnailPath}}" class="card-img-top" alt="Thumbnail">
                 <div class="card-body">
                     <h5 class="card-title" th:text="${property.title}">Property Title</h5>
                     <p class="card-text">

@@ -1,6 +1,7 @@
 package edu.hingu.project.config;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -12,12 +13,26 @@ import org.springframework.stereotype.Component;
 
 import edu.hingu.project.entities.Property;
 import edu.hingu.project.repositories.PropertyRepository;
+import jakarta.annotation.PostConstruct;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
 
     @Autowired
     private PropertyRepository propertyRepository;
+
+    @PostConstruct
+    public void updateAllImageFolders() {
+        List<Property> properties = propertyRepository.findAll();
+
+        for (Property p : properties) {
+            String cleanFolder = p.getTitle().replaceAll(" ", "_");
+            p.setImageFolder(cleanFolder);
+        }
+
+        propertyRepository.saveAll(properties);
+        System.out.println("✅ Updated all image folder names based on property title.");
+    }
 
     @Override
     public void run(String... args) throws Exception {
@@ -37,11 +52,10 @@ public class DataInitializer implements CommandLineRunner {
                         property.setTitle(record.get("title").trim());
                         property.setPrice(Double.parseDouble(record.get("price").trim()));
                         property.setLocation(record.get("location").trim());
-                        //property.setZipCode(record.get("zipCode").trim());
                         property.setSize(Integer.parseInt(record.get("size").trim()));
                         property.setDescription(record.get("description").trim());
 
-                        // Set image folder based on title (must match folder name)
+                        // Raw folder for now — updated later by @PostConstruct
                         property.setImageFolder(property.getTitle());
 
                         propertyRepository.save(property);

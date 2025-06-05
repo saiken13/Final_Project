@@ -76,4 +76,20 @@ public class Property {
     public void setImageFolder(String imageFolder) {
         this.imageFolder = imageFolder;
     }
+
+    public String getThumbnailPath() {
+        if (imageFolder != null && !imageFolder.isBlank()) {
+            try {
+                java.nio.file.Path folderPath = java.nio.file.Paths.get("src/main/resources/static/images/property-images/", imageFolder);
+                return java.nio.file.Files.list(folderPath)
+                        .findFirst()
+                        .map(path -> "/images/property-images/" + imageFolder + "/" + path.getFileName().toString())
+                        .orElse("/images/placeholder.jpg");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return "/images/placeholder.jpg";
+    }
+    
 }
