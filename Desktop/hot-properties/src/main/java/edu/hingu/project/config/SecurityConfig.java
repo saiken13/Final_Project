@@ -47,10 +47,14 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/register", "/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/register", "/login").permitAll()
                 .requestMatchers("/", "/index", "/css/**", "/js/**", "/images/**", "/webjars/**", "/profile-pictures/**").permitAll()
-                .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
-                .requestMatchers("/manager/**").hasAuthority("ROLE_MANAGER")
-                .requestMatchers("/browse", "/favorites").hasAuthority("ROLE_USER")
-                .requestMatchers("/dashboard", "/profile", "/settings").hasAnyAuthority("ROLE_USER", "ROLE_MANAGER", "ROLE_ADMIN")
+
+                // Role-based access
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/manager/**").hasRole("AGENT") // ✅ now AGENT instead of MANAGER
+                .requestMatchers("/browse", "/favorites", "/details/**", "/error").permitAll()// ✅ now BUYER instead of USER
+                .requestMatchers("/dashboard", "/profile", "/settings")
+                    .hasAnyRole("BUYER", "AGENT", "ADMIN")
+
                 .anyRequest().authenticated()
             )
             .addFilterBefore(globalRateLimiterFilter, UsernamePasswordAuthenticationFilter.class)

@@ -5,11 +5,6 @@
     <title>Hot Properties - Property Details</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
-    <style>
-        /* Placeholder for Appendix A design */
-        .details-section { padding: 50px 0; }
-        /* Replace with Appendix A styles */
-    </style>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -26,18 +21,37 @@
     </div>
 </nav>
 
-<div class="container details-section">
-    <h1 th:text="${property.title}">Property Title</h1>
-    <img th:if="${property.imagePath}" th:src="@{${property.imagePath}}" class="img-fluid mb-3" alt="Property Image">
-    <img th:unless="${property.imagePath}" src="/images/placeholder.jpg" class="img-fluid mb-3" alt="Placeholder">
-    <p th:text="${property.description}">Description</p>
+<div class="container my-5">
+    <h1 class="mb-3" th:text="${property.title}">Property Title</h1>
     <p><strong>Price:</strong> <span th:text="${#numbers.formatCurrency(property.price)}">$0.00</span></p>
-    <p><strong>Address:</strong> <span th:text="${property.address}">Address</span></p>
-    <a th:href="@{'/image-viewer/' + ${property.id}}" class="btn btn-primary">View Image</a>
-    <a th:href="@{/browse}" class="btn btn-secondary">Back</a>
+    <p><strong>Location:</strong> <span th:text="${property.location}">Location</span></p>
+    <p><strong>Size:</strong> <span th:text="${property.size}">0</span> sq. ft.</p>
+    <p><strong>Description:</strong> <span th:text="${property.description}">Description</span></p>
+
+    <!-- 🖼 Image carousel -->
+    <div th:if="${imagePaths != null and !imagePaths.isEmpty()}">
+        <div id="propertyCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                <div class="carousel-item active" th:each="path, stat : ${imagePaths}" th:classappend="${stat.index == 0} ? 'active'">
+                    <img th:src="@{${path}}" class="d-block w-100" style="max-height: 400px; object-fit: cover;" alt="Property Image">
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#propertyCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#propertyCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+            </button>
+        </div>
+    </div>
+    <div th:unless="${imagePaths != null and !imagePaths.isEmpty()}">
+        <img src="/images/placeholder.jpg" class="img-fluid mb-4" alt="No image available">
+    </div>
+
+    <a th:href="@{/browse}" class="btn btn-secondary">Back to Browse</a>
 </div>
 
-<footer class="bg-light text-center py-3 mt-5">
+<footer class="bg-light text-center py-3">
     <p>© 2025 Hot Properties. All rights reserved.</p>
 </footer>
 

@@ -89,10 +89,9 @@
             <p><strong>Email:</strong> <span th:text="${user.email}">user@example.com</span></p>
             <p><strong>Role:</strong>
                 <span sec:authorize="hasRole('ROLE_ADMIN')">ADMIN</span>
-                <span sec:authorize="hasRole('ROLE_MANAGER')">MANAGER</span>
                 <span sec:authorize="hasRole('ROLE_AGENT')">AGENT</span>
-                <span sec:authorize="hasRole('ROLE_USER')">USER</span>
-            </p>
+                <span sec:authorize="hasRole('ROLE_BUYER')">BUYER</span>
+            </p>            
         </div>
         <div class="btn-group">
             <a th:href="@{/edit-profile}" class="btn btn-primary">Edit Profile</a>

@@ -28,7 +28,7 @@ public interface UserService {
     @PreAuthorize("hasRole('ADMIN')")
     List<User> getAllUsers();
 
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('AGENT')")
     List<User> getTeamForCurrentManager();
 
     String storeProfilePicture(Long userId, MultipartFile file);
@@ -46,14 +46,11 @@ public interface UserService {
 
     void deleteUser(Long id);
 
-    // ✅ For populating "Manage Properties" page with current user's listings
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('AGENT')")
     void prepareManagePropertiesModel(Model model);
 
-    // ✅ Get all properties listed by a specific user (used internally)
     List<Property> getPropertiesByUser(User user);
 
-    // ✅ For current authenticated user with role USER
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('BUYER')")
     List<Property> getPropertiesForCurrentUser();
 }

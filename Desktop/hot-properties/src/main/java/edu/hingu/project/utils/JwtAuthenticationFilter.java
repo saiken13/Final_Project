@@ -41,12 +41,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         log.debug("🔍 Intercepting request path: {}", path);
 
-        // 🔓 Skip authentication for public resources
+        // ✅ Skip JWT authentication for public paths
         if (path.equals("/") || path.equals("/index")
                 || path.equals("/login") || path.equals("/register")
+                || path.equals("/browse") // 👈 ADDED THIS LINE
                 || path.startsWith("/css") || path.startsWith("/js")
                 || path.startsWith("/images") || path.startsWith("/webjars")
-                || path.startsWith("/profile-pictures")) {
+                || path.startsWith("/profile-pictures") || path.startsWith("/uploads")) {
             log.debug("🔓 Skipping JWT auth for public path: {}", path);
             filterChain.doFilter(request, response);
             return;

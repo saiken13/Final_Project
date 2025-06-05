@@ -71,10 +71,10 @@ public class UserServiceImpl implements UserService {
 
         model.addAttribute("user", user);
 
-        boolean isManager = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"));
+        boolean isAgent = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_AGENT"));
 
-        if (isManager) {
+        if (isAgent) {
             List<User> currentEmployees = userRepository.findByManager(user);
             List<User> availableUsers = userRepository.findByManagerIsNull().stream()
                     .filter(u -> !u.getEmail().equals(user.getEmail()))

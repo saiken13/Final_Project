@@ -73,21 +73,21 @@ public class UserAccountController {
     }
 
     @GetMapping("/logout")
-    @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('BUYER', 'AGENT', 'ADMIN')")
     public String logout(HttpServletResponse response) {
         authService.clearJwtCookie(response);
         return "redirect:/login";
     }
 
     @GetMapping("/dashboard")
-    @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('BUYER', 'AGENT', 'ADMIN')")
     public String showDashboard(Model model) {
         userService.prepareDashboardModel(model);
         return "dashboard";
     }
 
     @GetMapping("/profile")
-    @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('BUYER', 'AGENT', 'ADMIN')")
     public String showProfile(Model model) {
         userService.prepareProfileModel(model);
         return "profile";
@@ -102,7 +102,7 @@ public class UserAccountController {
     }
 
     @PostMapping("/edit-profile")
-    @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('BUYER', 'AGENT', 'ADMIN')")
     public String updateSettings(@ModelAttribute("user") User updatedUser,
                                  @RequestParam(required = false) String password,
                                  @RequestParam(required = false) List<Long> addIds,
@@ -157,7 +157,7 @@ public class UserAccountController {
         return "all_users";
     }
 
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('AGENT')")
     @GetMapping("/manager/team")
     public String showMyTeam(Model model) {
         model.addAttribute("team", userService.getTeamForCurrentManager());
@@ -193,7 +193,7 @@ public class UserAccountController {
     }
 
     @PostMapping("/users/{id}/upload-profile-picture")
-    @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('BUYER', 'AGENT', 'ADMIN')")
     public String uploadProfilePicture(@PathVariable Long id,
                                        @RequestParam("file") MultipartFile file,
                                        RedirectAttributes redirectAttributes) {

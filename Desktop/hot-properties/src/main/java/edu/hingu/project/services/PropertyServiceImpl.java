@@ -30,6 +30,10 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Override
     public Property saveProperty(Property property) {
+        // Automatically set image folder based on title (if not already set)
+        if (property.getImageFolder() == null || property.getImageFolder().isBlank()) {
+            property.setImageFolder(property.getTitle()); // You can sanitize title if needed
+        }
         return propertyRepository.save(property);
     }
 
@@ -54,35 +58,33 @@ public class PropertyServiceImpl implements PropertyService {
     }
 
     @Override
-public List<Property> filterProperties(String zip, Integer minSqft, Double minPrice, Double maxPrice, String sort) {
-    List<Property> properties = propertyRepository.findAll();
+    public List<Property> filterProperties(String location, Integer minSqft, Double minPrice, Double maxPrice, String sort) {
+        List<Property> properties = propertyRepository.findAll();
 
-    if (zip != null && !zip.isBlank()) {
-        properties = properties.stream()
-            .filter(p -> p.getZipCode() != null && p.getZipCode().contains(zip))
-            .collect(Collectors.toList());
-    }
-    
-
-    if (minSqft != null) {
-        properties = properties.stream()
-                .filter(p -> p.getSize() >= minSqft)
+        if (location != null && !location.isBlank()) {
+            properties = properties.stream()
+                .filter(p -> p.getLocation() != null && p.getLocation().toLowerCase().contains(location.toLowerCase()))
                 .collect(Collectors.toList());
+        }
+
+        if (minSqft != null) {
+            properties = properties.stream()
+                    .filter(p -> p.getSize() >= minSqft)
+                    .collect(Collectors.toList());
+        }
+
+        if (minPrice != null && maxPrice != null) {
+            properties = properties.stream()
+                    .filter(p -> p.getPrice() >= minPrice && p.getPrice() <= maxPrice)
+                    .collect(Collectors.toList());
+        }
+
+        if ("high".equals(sort)) {
+            properties.sort(Comparator.comparing(Property::getPrice).reversed());
+        } else if ("low".equals(sort)) {
+            properties.sort(Comparator.comparing(Property::getPrice));
+        }
+
+        return properties;
     }
-
-    if (minPrice != null && maxPrice != null) {
-        properties = properties.stream()
-                .filter(p -> p.getPrice() >= minPrice && p.getPrice() <= maxPrice)
-                .collect(Collectors.toList());
-    }
-
-    if ("high".equals(sort)) {
-        properties.sort(Comparator.comparing(Property::getPrice).reversed());
-    } else if ("low".equals(sort)) {
-        properties.sort(Comparator.comparing(Property::getPrice));
-    }
-
-    return properties;
-}
-
 }

@@ -19,8 +19,6 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private PropertyRepository propertyRepository;
 
-
-
     @Override
     public void run(String... args) throws Exception {
         if (propertyRepository.count() == 0) {
@@ -34,19 +32,29 @@ public class DataInitializer implements CommandLineRunner {
                 )
             ) {
                 for (CSVRecord record : parser) {
-                    Property property = new Property();
-                    property.setTitle(record.get("title").trim());
-                    property.setPrice(Double.parseDouble(record.get("price").trim()));
-                    property.setLocation(record.get("location").trim());
-                    property.setSize(Integer.parseInt(record.get("size").trim()));
-                    property.setDescription(record.get("description").trim());
+                    try {
+                        Property property = new Property();
+                        property.setTitle(record.get("title").trim());
+                        property.setPrice(Double.parseDouble(record.get("price").trim()));
+                        property.setLocation(record.get("location").trim());
+                        //property.setZipCode(record.get("zipCode").trim());
+                        property.setSize(Integer.parseInt(record.get("size").trim()));
+                        property.setDescription(record.get("description").trim());
 
-                    propertyRepository.save(property);
+                        // Set image folder based on title (must match folder name)
+                        property.setImageFolder(property.getTitle());
+
+                        propertyRepository.save(property);
+                    } catch (Exception e) {
+                        System.err.println("Skipping row due to error: " + e.getMessage());
+                    }
                 }
-                System.out.println("Property data loaded successfully.");
+                System.out.println("✅ Property data loaded successfully.");
             } catch (Exception e) {
-                System.err.println("Error loading data: " + e.getMessage());
+                System.err.println("❌ Error loading data: " + e.getMessage());
             }
+        } else {
+            System.out.println("🟡 Properties already exist, skipping initialization.");
         }
     }
 }
