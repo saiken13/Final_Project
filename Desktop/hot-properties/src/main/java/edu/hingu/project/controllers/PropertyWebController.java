@@ -1,8 +1,6 @@
 package edu.hingu.project.controllers;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -12,6 +10,7 @@ import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import edu.hingu.project.entities.Property;
+import edu.hingu.project.entities.User;
 import edu.hingu.project.services.PropertyService;
 import edu.hingu.project.services.UserService;
 
@@ -29,7 +29,8 @@ public class PropertyWebController {
     private final PropertyService propertyService;
     private final UserService userService;
 
-    public PropertyWebController(PropertyService propertyService, UserService userService) {
+    public PropertyWebController(PropertyService propertyService,
+                                 UserService userService) {
         this.propertyService = propertyService;
         this.userService = userService;
     }
@@ -55,19 +56,15 @@ public class PropertyWebController {
             return "redirect:/browse";
         }
 
-        // ❌ Don't alter folder name — it must match what's on disk
         String folder = property.getImageFolder();
         List<String> imagePaths = new ArrayList<>();
 
         try {
-            Path imageDir = Paths.get("src/main/resources/static/images/property-images/" + folder);
-            System.out.println("Looking for images in: " + imageDir.toAbsolutePath()); // ✅ Debug log
+            Path imageDir = Paths.get(ResourceUtils.getFile("classpath:static/images/property-images/" + folder).toURI());
             if (Files.exists(imageDir)) {
                 Files.list(imageDir).forEach(path -> {
                     String filename = path.getFileName().toString();
-                    String encodedFolder = URLEncoder.encode(folder, StandardCharsets.UTF_8);
-                    String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8);
-                    imagePaths.add("/images/property-images/" + encodedFolder + "/" + encodedFilename);
+                    imagePaths.add("/images/property-images/" + folder + "/" + filename);
                 });
             }
         } catch (IOException e) {
@@ -77,6 +74,27 @@ public class PropertyWebController {
         model.addAttribute("property", property);
         model.addAttribute("imagePaths", imagePaths);
         return "property-details";
+    }
+
+    @PostMapping("/favorites/add/{propertyId}")
+    @PreAuthorize("hasRole('BUYER')")
+    public String addFavorite(@PathVariable Long propertyId, RedirectAttributes redirectAttributes) {
+        User currentUser = userService.getCurrentUser();
+        Property property = propertyService.getById(propertyId).orElse(null);
+
+        if (property == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Property not found.");
+            return "redirect:/browse";
+        }
+
+        if (!propertyService.isFavoritedByUser(currentUser, property)) {
+            propertyService.toggleFavorite(currentUser, property);
+            redirectAttributes.addFlashAttribute("successMessage", "Added to favorites!");
+        } else {
+            redirectAttributes.addFlashAttribute("infoMessage", "Already in favorites.");
+        }
+
+        return "redirect:/details/" + propertyId;
     }
 
 

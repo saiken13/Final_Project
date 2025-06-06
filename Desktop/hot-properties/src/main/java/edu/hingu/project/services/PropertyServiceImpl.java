@@ -8,8 +8,10 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import edu.hingu.project.entities.Favorite;
 import edu.hingu.project.entities.Property;
 import edu.hingu.project.entities.User;
+import edu.hingu.project.repositories.FavoriteRepository;
 import edu.hingu.project.repositories.PropertyRepository;
 
 @Service
@@ -17,6 +19,9 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Autowired
     private PropertyRepository propertyRepository;
+
+    @Autowired
+    private FavoriteRepository favoriteRepository;
 
     @Override
     public List<Property> getAllProperties() {
@@ -30,9 +35,8 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Override
     public Property saveProperty(Property property) {
-        // Automatically set image folder based on title (if not already set)
         if (property.getImageFolder() == null || property.getImageFolder().isBlank()) {
-            property.setImageFolder(property.getTitle()); // You can sanitize title if needed
+            property.setImageFolder(property.getTitle());
         }
         return propertyRepository.save(property);
     }
@@ -87,4 +91,27 @@ public class PropertyServiceImpl implements PropertyService {
 
         return properties;
     }
+
+    // ✅ Toggle favorite status
+    @Override
+    public boolean toggleFavorite(User user, Property property) {
+        Optional<Favorite> existing = favoriteRepository.findByBuyerAndProperty(user, property);
+        if (existing.isPresent()) {
+            favoriteRepository.delete(existing.get());
+            return false;
+        } else {
+            Favorite favorite = new Favorite();
+            favorite.setBuyer(user);
+            favorite.setProperty(property);
+            favoriteRepository.save(favorite);
+            return true;
+        }
+    }
+
+    @Override
+    public boolean isFavoritedByUser(User user, Property property) {
+        return favoriteRepository.findByBuyerAndProperty(user, property).isPresent();
+    }
+
+
 }

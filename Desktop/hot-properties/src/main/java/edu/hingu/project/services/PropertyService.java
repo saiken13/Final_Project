@@ -22,6 +22,9 @@ public interface PropertyService {
 
     List<Property> getPropertiesByOwner(User owner);
 
-    // ✅ Add this declaration to fix the error
-    List<Property> filterProperties(String zip, Integer minSqft, Double minPrice, Double maxPrice, String sort);
+    List<Property> filterProperties(String location, Integer minSqft, Double minPrice, Double maxPrice, String sort);
+
+    // ✅ Favorite-related methods
+    boolean toggleFavorite(User user, Property property);
+    boolean isFavoritedByUser(User user, Property property);
 }

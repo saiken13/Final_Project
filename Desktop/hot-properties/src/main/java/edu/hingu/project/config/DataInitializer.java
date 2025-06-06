@@ -1,14 +1,9 @@
 package edu.hingu.project.config;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import edu.hingu.project.entities.Property;
@@ -35,7 +30,12 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
+        updateAllImageFolders(); // Force update for existing properties
+        System.out.println("✅ Synced image folder names");
+        
+        // Uncomment this block below if you ever need to re-seed from CSV
+        /*
         if (propertyRepository.count() == 0) {
             System.out.println("Loading property data from CSV...");
 
@@ -70,5 +70,6 @@ public class DataInitializer implements CommandLineRunner {
         } else {
             System.out.println("🟡 Properties already exist, skipping initialization.");
         }
+        */
     }
 }
