@@ -21,6 +21,9 @@ public interface PropertyService {
     List<Property> filterByPrice(Double minPrice, Double maxPrice);
 
     List<Property> getPropertiesByOwner(User owner);
+    
+    List<Property> getFavoritesByUser(User user);
+
 
     List<Property> filterProperties(String location, Integer minSqft, Double minPrice, Double maxPrice, String sort);
 

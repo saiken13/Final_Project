@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Transient;
 
 @Entity
 public class Property {
@@ -67,6 +68,17 @@ public class Property {
 
     public List<PropertyImage> getImages() { return images; }
     public void setImages(List<PropertyImage> images) { this.images = images; }
+
+    @Transient
+    private String tempImagePath;
+
+    public String getTempImagePath() {
+        return tempImagePath;
+    }
+
+    public void setTempImagePath(String tempImagePath) {
+        this.tempImagePath = tempImagePath;
+    }
 
     // ✅ New Getter/Setter
     public String getImageFolder() {

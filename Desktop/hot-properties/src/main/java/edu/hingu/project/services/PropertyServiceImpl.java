@@ -113,5 +113,14 @@ public class PropertyServiceImpl implements PropertyService {
         return favoriteRepository.findByBuyerAndProperty(user, property).isPresent();
     }
 
+    @Override
+    public List<Property> getFavoritesByUser(User user) {
+        List<Favorite> favorites = favoriteRepository.findByBuyerId(user.getId());
+        return favorites.stream()
+            .map(Favorite::getProperty)
+            .collect(Collectors.toList());
+}
+
+
 
 }
