@@ -270,4 +270,30 @@ public class PropertyWebController {
         redirectAttributes.addFlashAttribute("successMessage", "Property deleted successfully.");
         return "redirect:/properties/manage";
     }
+
+    @GetMapping("/properties/new")
+    @PreAuthorize("hasRole('AGENT')")
+    public String showAddPropertyForm(Model model) {
+        model.addAttribute("property", new Property());
+        return "add-property";
+    }
+
+    @PostMapping("/properties/new")
+    @PreAuthorize("hasRole('AGENT')")
+    public String addProperty(@ModelAttribute("property") Property property,
+                            @RequestParam("images") MultipartFile[] images,
+                            RedirectAttributes redirectAttributes) {
+
+        try {
+            Property savedProperty = propertyService.saveProperty(property);
+            propertyService.updatePropertyWithImages(savedProperty, images);
+            redirectAttributes.addFlashAttribute("successMessage", "Property added successfully!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to add property.");
+        }
+
+        return "redirect:/properties/manage";
+    }
+
 }
