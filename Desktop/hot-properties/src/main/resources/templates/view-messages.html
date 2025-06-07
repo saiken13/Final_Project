@@ -1,42 +1,40 @@
+<!-- src/main/resources/templates/view-messages.html -->
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Hot Properties - View Message</title>
+    <title>Message Details</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css">
-    <style>
-        /* Placeholder for Appendix A design */
-        .message-view { padding: 50px 0; }
-        /* Replace with Appendix A styles */
-    </style>
 </head>
-<body>
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<body style="background: url('/images/house-bg.png') no-repeat center center fixed; background-size: cover; font-family: Arial, sans-serif;">
+<nav class="navbar navbar-light bg-light">
     <div class="container">
         <a class="navbar-brand" href="/">Hot Properties</a>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" th:href="@{/properties}">Properties</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/listings}">Manage Listings</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/messages}">Messages</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/logout}">Logout</a></li>
-            </ul>
-        </div>
+        <a class="btn btn-primary" href="/dashboard">Dashboard</a>
     </div>
 </nav>
 
-<div class="container message-view">
-    <h1>View Message</h1>
-    <p th:text="${message.content}"></p>
-    <p><small class="text-muted" th:text="${#dates.format(message.sentAt, 'yyyy-MM-dd HH:mm')}"></small></p>
-    <a th:href="@{/messages}" class="btn btn-secondary">Back to Messages</a>
+<div class="container mt-5 bg-white p-4 rounded shadow">
+    <h3 class="mb-4 text-center">Message Details</h3>
+    
+    <dl class="row">
+        <dt class="col-sm-3">Property Title:</dt>
+        <dd class="col-sm-9" th:text="${message.property != null ? message.property.title : 'N/A'}">Property Name</dd>
+
+        <dt class="col-sm-3">Sender:</dt>
+        <dd class="col-sm-9" th:text="${message.sender != null ? message.sender.name : 'N/A'}">Sender Name</dd>
+
+        <dt class="col-sm-3">Email:</dt>
+        <dd class="col-sm-9" th:text="${message.sender != null ? message.sender.email : 'N/A'}">Sender Email</dd>
+
+        <dt class="col-sm-3">Message:</dt>
+        <dd class="col-sm-9" th:text="${message.content}">Message Content</dd>
+
+        <dt class="col-sm-3">Timestamp:</dt>
+        <dd class="col-sm-9" th:text="${message.timestamp != null ? #temporals.format(message.timestamp, 'yyyy-MM-dd HH:mm') : 'N/A'}">Time</dd>
+    </dl>
+
+    <a href="/messages/agent" class="btn btn-secondary">← Back to Messages</a>
 </div>
-
-<footer class="bg-light text-center py-3 mt-5">
-    <p>© 2025 Hot Properties. All rights reserved.</p>
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
