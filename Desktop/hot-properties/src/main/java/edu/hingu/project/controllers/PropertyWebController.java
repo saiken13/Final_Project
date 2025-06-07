@@ -12,11 +12,15 @@ import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.ResourceUtils;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import edu.hingu.project.entities.Property;
@@ -169,21 +173,45 @@ public class PropertyWebController {
 
     @GetMapping("/properties/edit/{id}")
     @PreAuthorize("hasRole('AGENT')")
-    public String showEditForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+    public String showEditForm(@PathVariable Long id, Model model) {
         Property property = propertyService.getById(id).orElse(null);
-        if (property == null || !property.getOwner().getId().equals(userService.getCurrentUser().getId())) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Unauthorized or Property not found");
+
+        if (property == null) {
             return "redirect:/properties/manage";
         }
+
+        String folder = property.getImageFolder();
+        List<String> imageUrls = new ArrayList<>();
+
+        try {
+            Path imageDir = Paths.get(ResourceUtils.getFile("classpath:static/images/property-images/" + folder).toURI());
+            if (Files.exists(imageDir)) {
+                Files.list(imageDir).forEach(path -> {
+                    String filename = path.getFileName().toString();
+                    imageUrls.add(folder + "/" + filename);
+                });
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        property.setImageUrls(imageUrls);
         model.addAttribute("property", property);
         return "edit-property";
     }
 
+    @InitBinder("property")
+    public void initBinder(WebDataBinder binder) {
+        binder.setDisallowedFields("images");
+    }
+
+
     @PostMapping("/properties/edit/{id}")
     @PreAuthorize("hasRole('AGENT')")
     public String updateProperty(@PathVariable Long id,
-                                 @ModelAttribute("property") Property updatedProperty,
-                                 RedirectAttributes redirectAttributes) {
+                                @ModelAttribute("property") Property updatedProperty,
+                                @RequestParam("images") MultipartFile[] images,
+                                RedirectAttributes redirectAttributes) {
         Property property = propertyService.getById(id).orElse(null);
         if (property == null || !property.getOwner().getId().equals(userService.getCurrentUser().getId())) {
             redirectAttributes.addFlashAttribute("errorMessage", "Unauthorized or Property not found");
@@ -195,12 +223,39 @@ public class PropertyWebController {
         property.setPrice(updatedProperty.getPrice());
         property.setLocation(updatedProperty.getLocation());
         property.setSize(updatedProperty.getSize());
-        property.setImageFolder(updatedProperty.getImageFolder());
 
-        propertyService.saveProperty(property);
+        propertyService.updatePropertyWithImages(property, images);
         redirectAttributes.addFlashAttribute("successMessage", "Property updated successfully.");
         return "redirect:/properties/manage";
     }
+
+    @PostMapping("/properties/{id}/images/delete/{folder}/{filename:.+}")
+    @PreAuthorize("hasRole('AGENT')")
+    public String deleteImage(@PathVariable Long id,
+                            @PathVariable String folder,
+                            @PathVariable String filename,
+                            RedirectAttributes redirectAttributes) {
+        Property property = propertyService.getById(id).orElse(null);
+        if (property == null || !property.getOwner().getId().equals(userService.getCurrentUser().getId())) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Unauthorized or Property not found");
+            return "redirect:/properties/manage";
+        }
+
+        Path imagePath = Paths.get("src/main/resources/static/images/property-images", folder, filename);
+
+        try {
+            Files.deleteIfExists(imagePath);
+            redirectAttributes.addFlashAttribute("successMessage", "Image deleted successfully.");
+        } catch (IOException e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to delete image: " + e.getMessage());
+        }
+
+        return "redirect:/properties/edit/" + id;
+    }
+
+
+
 
     @GetMapping("/properties/delete/{id}")
     @PreAuthorize("hasRole('AGENT')")

@@ -3,6 +3,8 @@ package edu.hingu.project.services;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import edu.hingu.project.entities.Property;
 import edu.hingu.project.entities.User;
 
@@ -24,6 +26,9 @@ public interface PropertyService {
 
     List<Property> getFavoritesByUser(User user);
 
+    void deleteImage(Property property, String filename);
+
+    void updatePropertyWithImages(Property property, MultipartFile[] images);
 
     List<Property> filterProperties(String location, Integer minSqft, Double minPrice, Double maxPrice, String sort);
 

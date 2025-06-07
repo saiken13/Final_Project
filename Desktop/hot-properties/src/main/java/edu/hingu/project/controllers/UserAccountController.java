@@ -11,6 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -28,7 +29,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import edu.hingu.project.entities.User;
 import edu.hingu.project.services.AuthService;
 import edu.hingu.project.services.UserService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Controller
@@ -53,25 +53,23 @@ public class UserAccountController {
         return "login";
     }
 
-    @PostMapping("/login")
-    public String processLogin(@ModelAttribute("user") User user, HttpServletResponse response, Model model) {
-        try {
-            Cookie jwtCookie = authService.loginAndCreateJwtCookieByEmail(user);
+    
 
-            String cookieHeader = String.format("jwt=%s; Max-Age=%d; Path=/; HttpOnly; SameSite=Lax",
-                    jwtCookie.getValue(), jwtCookie.getMaxAge());
+@PostMapping("/login")
+public String processLogin(@ModelAttribute("user") User user, HttpServletResponse response, Model model) {
+    try {
+        // ✅ Generate JWT and return Spring's ResponseCookie
+        ResponseCookie jwtCookie = authService.loginAndCreateJwtCookieByEmail(user);
 
-            if (jwtCookie.getSecure()) {
-                cookieHeader += "; Secure";
-            }
+        // ✅ Add cookie to response header
+        response.addHeader("Set-Cookie", jwtCookie.toString());
 
-            response.setHeader("Set-Cookie", cookieHeader);
-            return "redirect:/dashboard";
-        } catch (BadCredentialsException e) {
-            model.addAttribute("error", "Invalid email or password");
-            return "login";
-        }
+        return "redirect:/dashboard";
+    } catch (BadCredentialsException e) {
+        model.addAttribute("error", "Invalid email or password");
+        return "login";
     }
+}
 
     @GetMapping("/logout")
     @PreAuthorize("hasAnyRole('BUYER', 'AGENT', 'ADMIN')")

@@ -1,5 +1,6 @@
 package edu.hingu.project.services;
 
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,7 +14,6 @@ import edu.hingu.project.dtos.JwtResponse;
 import edu.hingu.project.entities.User;
 import edu.hingu.project.repositories.UserRepository;
 import edu.hingu.project.utils.JwtUtil;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Service
@@ -40,33 +40,42 @@ public class AuthServiceImpl implements AuthService {
 
             String token = jwtUtil.generateToken((org.springframework.security.core.userdetails.User) auth.getPrincipal());
             return new JwtResponse(token);
-
         } catch (AuthenticationException e) {
             throw new BadCredentialsException("Invalid email or password");
         }
     }
 
     @Override
-    public Cookie loginAndCreateJwtCookie(User user) throws BadCredentialsException {
+    public ResponseCookie loginAndCreateJwtCookie(User user) throws BadCredentialsException {
         JwtResponse jwtResponse = authenticateAndGenerateToken(user);
 
-        Cookie jwtCookie = new Cookie("jwt", jwtResponse.getToken());
-        jwtCookie.setHttpOnly(true);
-        jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(60 * 60);
-        jwtCookie.setSecure(false);
-        jwtCookie.setDomain("localhost");
-        return jwtCookie;
+        ResponseCookie cookie = ResponseCookie.from("jwt", jwtResponse.getToken())
+                .httpOnly(true)       // send to server only
+                .secure(false)        // false for localhost; true in production (https)
+                .path("/")
+                .maxAge(60 * 60)      // 1 hour
+                .sameSite("Lax")      // ensures compatibility with normal POSTs
+                .build();
+
+        return cookie;
     }
 
     @Override
-    public Cookie loginAndCreateJwtCookieByEmail(User user) throws BadCredentialsException {
+    public ResponseCookie loginAndCreateJwtCookieByEmail(User user) throws BadCredentialsException {
         return loginAndCreateJwtCookie(user);
     }
 
     @Override
     public void clearJwtCookie(HttpServletResponse response) {
-        response.setHeader("Set-Cookie", "jwt=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax");
+        ResponseCookie cookie = ResponseCookie.from("jwt", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+
+        response.setHeader("Set-Cookie", cookie.toString());
     }
 
     @Override

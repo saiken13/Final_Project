@@ -34,8 +34,8 @@ public class DataInitializer implements CommandLineRunner {
 
         jdbcTemplate.execute("DELETE FROM favorite");
         jdbcTemplate.execute("DELETE FROM property_image");
-        jdbcTemplate.execute("DELETE FROM property");
-        jdbcTemplate.execute("ALTER TABLE property AUTO_INCREMENT = 1");
+        jdbcTemplate.execute("DELETE FROM properties");
+        jdbcTemplate.execute("ALTER TABLE properties AUTO_INCREMENT = 1");
 
         List<User> agents = userRepository.findAll().stream()
             .filter(u -> u.getRoles().stream().anyMatch(r -> r.getName().equalsIgnoreCase("AGENT")))

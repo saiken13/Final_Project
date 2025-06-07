@@ -1,5 +1,9 @@
 package edu.hingu.project.services;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -8,12 +12,14 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import edu.hingu.project.entities.Favorite;
 import edu.hingu.project.entities.Property;
 import edu.hingu.project.entities.User;
 import edu.hingu.project.repositories.FavoriteRepository;
 import edu.hingu.project.repositories.PropertyRepository;
+
 
 @Service
 public class PropertyServiceImpl implements PropertyService {
@@ -164,6 +170,49 @@ public class PropertyServiceImpl implements PropertyService {
     
         return propertyRepository.save(property);
     }
-    
 
+    @Override
+    public void deleteImage(Property property, String relativePath) {
+        try {
+            Path imagePath = Paths.get("src/main/resources/static/images/property-images").resolve(relativePath);
+            System.out.println("🧹 Deleting: " + imagePath.toAbsolutePath());
+
+            boolean deleted = Files.deleteIfExists(imagePath);
+            System.out.println(deleted ? "✅ Deleted image." : "❌ Image not found.");
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to delete image: " + relativePath, e);
+        }
+    }
+
+
+    @Override
+public void updatePropertyWithImages(Property property, MultipartFile[] images) {
+    if (images != null && images.length > 0) {
+        String folder = property.getImageFolder();
+        Path folderPath = Paths.get("src/main/resources/static/images/property-images/" + folder);
+
+        if (!Files.exists(folderPath)) {
+            try {
+                Files.createDirectories(folderPath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        for (MultipartFile image : images) {
+            if (!image.isEmpty()) {
+                try {
+                    Path filePath = folderPath.resolve(image.getOriginalFilename());
+                    Files.write(filePath, image.getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    propertyRepository.save(property);
+
+}
 }
