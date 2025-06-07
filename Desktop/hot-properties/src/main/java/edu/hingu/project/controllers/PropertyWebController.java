@@ -74,7 +74,6 @@ public class PropertyWebController {
             e.printStackTrace();
         }
 
-        // ✅ Add favorite status
         boolean isFavorited = false;
         User currentUser = userService.getCurrentUser();
         if (currentUser != null) {
@@ -83,10 +82,9 @@ public class PropertyWebController {
 
         model.addAttribute("property", property);
         model.addAttribute("imagePaths", imagePaths);
-        model.addAttribute("isFavorited", isFavorited); // ✅ Inject into Thymeleaf
+        model.addAttribute("isFavorited", isFavorited);
         return "property-details";
     }
-
 
     @PostMapping("/favorites/add/{propertyId}")
     @PreAuthorize("hasRole('BUYER')")
@@ -130,51 +128,47 @@ public class PropertyWebController {
         return "redirect:/favorites";
     }
 
+    @GetMapping("/favorites")
+    @PreAuthorize("hasRole('BUYER')")
+    public String viewFavorites(Model model) {
+        User currentUser = userService.getCurrentUser();
+        List<Property> favorites = propertyService.getFavoritesByUser(currentUser);
 
-@GetMapping("/favorites")
-@PreAuthorize("hasRole('BUYER')")
-public String viewFavorites(Model model) {
-    User currentUser = userService.getCurrentUser();
-    List<Property> favorites = propertyService.getFavoritesByUser(currentUser);
+        for (Property property : favorites) {
+            String folder = property.getImageFolder();
+            String imagePath = null;
 
-    // Resolve image path for each property
-    for (Property property : favorites) {
-        String folder = property.getImageFolder();
-        String imagePath = null;
-
-        if (folder != null && !folder.isEmpty()) {
-            Path folderPath = Paths.get("src/main/resources/static/images/property-images/" + folder);
-            try {
-                if (Files.exists(folderPath)) {
-                    imagePath = Files.list(folderPath)
-                            .filter(Files::isRegularFile)
-                            .map(path -> "/images/property-images/" + folder + "/" + path.getFileName().toString())
-                            .findFirst()
-                            .orElse(null);
+            if (folder != null && !folder.isEmpty()) {
+                Path folderPath = Paths.get("src/main/resources/static/images/property-images/" + folder);
+                try {
+                    if (Files.exists(folderPath)) {
+                        imagePath = Files.list(folderPath)
+                                .filter(Files::isRegularFile)
+                                .map(path -> "/images/property-images/" + folder + "/" + path.getFileName().toString())
+                                .findFirst()
+                                .orElse(null);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
+
+            property.setTempImagePath(imagePath);
         }
 
-        // Store the resolved image path into a transient field or model map
-        property.setTempImagePath(imagePath); // 👈 this needs a temp field in your Property class
+        model.addAttribute("favorites", favorites);
+        return "favorites";
     }
 
-    model.addAttribute("favorites", favorites);
-    return "favorites";
-}
-
-
     @GetMapping("/properties/manage")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('AGENT')")
     public String showManageProperties(Model model) {
         userService.prepareManagePropertiesModel(model);
         return "manage-properties";
     }
 
     @GetMapping("/properties/edit/{id}")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('AGENT')")
     public String showEditForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         Property property = propertyService.getById(id).orElse(null);
         if (property == null || !property.getOwner().getId().equals(userService.getCurrentUser().getId())) {
@@ -186,7 +180,7 @@ public String viewFavorites(Model model) {
     }
 
     @PostMapping("/properties/edit/{id}")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('AGENT')")
     public String updateProperty(@PathVariable Long id,
                                  @ModelAttribute("property") Property updatedProperty,
                                  RedirectAttributes redirectAttributes) {
@@ -209,7 +203,7 @@ public String viewFavorites(Model model) {
     }
 
     @GetMapping("/properties/delete/{id}")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('AGENT')")
     public String deleteProperty(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         Property property = propertyService.getById(id).orElse(null);
         if (property == null || !property.getOwner().getId().equals(userService.getCurrentUser().getId())) {

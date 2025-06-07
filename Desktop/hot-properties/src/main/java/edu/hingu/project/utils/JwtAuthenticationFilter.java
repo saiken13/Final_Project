@@ -44,16 +44,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // ✅ Skip JWT authentication for public paths
         if (path.equals("/") || path.equals("/index")
                 || path.equals("/login") || path.equals("/register")
-                || path.equals("/browse") // 👈 ADDED THIS LINE
+                || path.equals("/browse") || path.equals("/error")
                 || path.startsWith("/css") || path.startsWith("/js")
                 || path.startsWith("/images") || path.startsWith("/webjars")
-                || path.startsWith("/profile-pictures") || path.startsWith("/uploads")) {
+                || path.startsWith("/profile-pictures") || path.startsWith("/static") || path.startsWith("/uploads")) {
             log.debug("🔓 Skipping JWT auth for public path: {}", path);
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 🧠 Extract JWT from cookie
+        // 🤠 Extract JWT from cookie
         String token = null;
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {

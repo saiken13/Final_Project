@@ -21,7 +21,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "users")  // avoid using "user" — it's a reserved keyword in many SQL dialects
+@Table(name = "users")  // avoid using "user" — it's a reserved keyword
 public class User {
 
     @Id
@@ -43,31 +43,28 @@ public class User {
     @Column(nullable = false)
     private String email;
 
-
-
-    @ManyToMany(fetch = FetchType.EAGER)  // EAGER fetch to load roles during login
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
+        name = "user_roles",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles = new HashSet<>();
 
-    // Each user has a manager
     @ManyToOne
-    @JoinColumn(name = "manager_id")
-    private User manager;
+    @JoinColumn(name = "agent_id")
+    private User agent;
 
-    // Each manager has a list of users they manage
-    @OneToMany(mappedBy = "manager")
+    @OneToMany(mappedBy = "agent")
     @JsonIgnore
-    private List<User> subordinates = new ArrayList<>();
+    private List<User> clients = new ArrayList<>();
 
+    @Column
+    private String profilePicture;
 
-    @Column()
-    private String profilePicture; // stores filename or relative path
+    @Column
+    private boolean enabled;
 
-    // --- Constructors ---
     public User() {}
 
     public User(String username, String password, String firstName, String lastName,
@@ -81,82 +78,53 @@ public class User {
         this.profilePicture = profilePicture;
     }
 
-    public String getProfilePicture() {
-        return profilePicture;
-    }
-
-    public void setProfilePicture(String profilePicture) {
-        this.profilePicture = profilePicture;
-    }
-
     // --- Getters and Setters ---
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
 
     public void setId(Long id) { this.id = id; }
 
-    public String getUsername() {
-        return username;
-    }
+    public String getUsername() { return username; }
 
     public void setUsername(String username) { this.username = username; }
 
-    public String getPassword() {
-        return password;
-    }
+    public String getPassword() { return password; }
 
     public void setPassword(String password) { this.password = password; }
 
-    public Set<Role> getRoles() {
-        return roles;
-    }
+    public String getFirstName() { return firstName; }
+
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+
+    public String getLastName() { return lastName; }
+
+    public void setLastName(String lastName) { this.lastName = lastName; }
+
+    public String getEmail() { return email; }
+
+    public void setEmail(String email) { this.email = email; }
+
+    public Set<Role> getRoles() { return roles; }
 
     public void setRoles(Set<Role> roles) { this.roles = roles; }
 
-    public String getFirstName() {
-        return firstName;
-    }
+    public boolean isEnabled() { return enabled; }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
+    public void setEnabled(boolean enabled) { this.enabled = enabled; }
 
-    public String getLastName() {
-        return lastName;
-    }
+    public String getProfilePicture() { return profilePicture; }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
+    public void setProfilePicture(String profilePicture) { this.profilePicture = profilePicture; }
 
-    public String getEmail() {
-        return email;
-    }
+    public User getAgent() { return agent; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public void setAgent(User agent) { this.agent = agent; }
 
-    public User getManager() {
-        return manager;
-    }
+    public List<User> getClients() { return clients; }
 
-    public void setManager(User manager) {
-        this.manager = manager;
-    }
+    public void setClients(List<User> clients) { this.clients = clients; }
 
-    public List<User> getSubordinates() {
-        return subordinates;
+    public void addClient(User u1) {
+        this.clients.add(u1);
+        u1.setAgent(this);
     }
-
-    public void setSubordinates(List<User> subordinates) {
-        this.subordinates = subordinates;
-    }
-
-    public void addEmployee(User u1) {
-        this.subordinates.add(u1);
-        u1.setManager(this);
-    }
-}
-
+}    

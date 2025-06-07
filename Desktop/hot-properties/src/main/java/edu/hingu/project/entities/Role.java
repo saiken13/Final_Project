@@ -19,6 +19,12 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Override
+    public String toString() {
+        return name;
+    }
+    
+
     @Column(nullable = false, unique = true)
     private String name;
 

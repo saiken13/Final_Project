@@ -28,6 +28,10 @@ public interface UserService {
     @PreAuthorize("hasRole('ADMIN')")
     List<User> getAllUsers();
 
+    @PreAuthorize("hasRole('ADMIN')")
+    User registerAgent(User agent);
+
+
     @PreAuthorize("hasRole('AGENT')")
     List<User> getTeamForCurrentManager();
 

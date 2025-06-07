@@ -3,52 +3,81 @@
 <head>
     <title>Register</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 30px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+        }
+        .roles-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .roles-list li {
+            margin-bottom: 5px;
+        }
+    </style>
 </head>
 <body>
 
-<div class="login-container">
-    <h1>Create Account</h1>
+<div class="container">
+    <div class="form-container">
+        <h2 class="mb-4 text-center">Create Account</h2>
 
-    <div class="error-message" th:if="${errorMessage}" th:text="${errorMessage}"></div>
-    <div class="success" th:if="${successMessage}" th:text="${successMessage}"></div>
+        <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+        <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
 
-    <form method="post" th:action="@{/register}" th:object="${user}" enctype="multipart/form-data">
-        
-        <label for="username">Username</label>
-        <input id="username" required th:field="*{username}" type="text"/>
+        <form method="post" th:action="@{/register}" th:object="${user}" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input id="username" class="form-control" required th:field="*{username}" type="text"/>
+            </div>
 
-        <label for="password">Password</label>
-        <input id="password" required th:field="*{password}" type="password"/>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input id="password" class="form-control" required th:field="*{password}" type="password"/>
+            </div>
 
-        <label for="firstName">First Name</label>
-        <input id="firstName" required th:field="*{firstName}" type="text"/>
+            <div class="mb-3">
+                <label for="firstName" class="form-label">First Name</label>
+                <input id="firstName" class="form-control" required th:field="*{firstName}" type="text"/>
+            </div>
 
-        <label for="lastName">Last Name</label>
-        <input id="lastName" required th:field="*{lastName}" type="text"/>
+            <div class="mb-3">
+                <label for="lastName" class="form-label">Last Name</label>
+                <input id="lastName" class="form-control" required th:field="*{lastName}" type="text"/>
+            </div>
 
-        <label for="email">Email</label>
-        <input id="email" required th:field="*{email}" type="email"/>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input id="email" class="form-control" required th:field="*{email}" type="email"/>
+            </div>
 
-        <label for="profilePicture">Profile Picture</label>
-        <input id="profilePicture" class="form-select" type="file" name="file" accept="image/*"/>
+            <div class="mb-3">
+                <label for="profilePicture" class="form-label">Profile Picture</label>
+                <input id="profilePicture" class="form-control" type="file" name="file" accept="image/*"/>
+            </div>
 
-        <label>Roles</label>
-        <ul class="no-bullets roles-list">
-            <ul class="no-bullets roles-list">
-                <li><label><input class="checkbox-margin" type="checkbox" name="selectedRoles" value="BUYER"/> BUYER</label></li>
-                <li><label><input class="checkbox-margin" type="checkbox" name="selectedRoles" value="AGENT"/> AGENT</label></li>
-                <li><label><input class="checkbox-margin" type="checkbox" name="selectedRoles" value="ADMIN"/> ADMIN</label></li>
+            <div class="mb-3">
+                <label class="form-label">Roles</label>
+                <ul class="roles-list">
+                    <li><label><input class="form-check-input me-2" type="checkbox" name="selectedRoles" value="BUYER"/>BUYER</label></li>
+                    <li><label><input class="form-check-input me-2" type="checkbox" name="selectedRoles" value="AGENT"/>AGENT</label></li>
+                    <li><label><input class="form-check-input me-2" type="checkbox" name="selectedRoles" value="ADMIN"/>ADMIN</label></li>
+                </ul>
+            </div>
 
-            </ul>
-            
-        </ul>
+            <div class="d-grid">
+                <button class="btn btn-primary" type="submit">Register</button>
+            </div>
+        </form>
 
-        <button class="submit-btn" type="submit">Register</button>
-    </form>
-
-    <div class="back-link">
-        <a th:href="@{/login}">← Back to Login</a>
+        <div class="text-center mt-3">
+            <a th:href="@{/login}">← Back to Login</a>
+        </div>
     </div>
 </div>
 

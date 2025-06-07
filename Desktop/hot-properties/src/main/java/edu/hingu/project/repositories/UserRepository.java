@@ -13,9 +13,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByUsername(String username);
 
-    List<User> findByManager(User manager);
+    List<User> findByAgent(User agent);
 
-    List<User> findByManagerIsNull();
+    List<User> findByAgentIsNull();
 
     List<User> findAllByOrderByLastNameAsc();
 

@@ -11,6 +11,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -64,6 +65,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    public User registerAgent(User agent) {
+        Role agentRole = roleRepository.findByName("AGENT")
+            .orElseThrow(() -> new RuntimeException("Role AGENT not found"));
+        agent.setRoles(Set.of(agentRole));
+        agent.setEnabled(true);
+        return userRepository.save(agent);
+    }
+
+
+
+    @Override
     public void prepareSettingsModel(Model model) {
         CurrentUserContext context = getCurrentUserContext();
         User user = context.user();
@@ -75,8 +88,8 @@ public class UserServiceImpl implements UserService {
                 .anyMatch(a -> a.getAuthority().equals("ROLE_AGENT"));
 
         if (isAgent) {
-            List<User> currentEmployees = userRepository.findByManager(user);
-            List<User> availableUsers = userRepository.findByManagerIsNull().stream()
+            List<User> currentEmployees = userRepository.findByAgent(user);
+            List<User> availableUsers = userRepository.findByAgentIsNull().stream()
                     .filter(u -> !u.getEmail().equals(user.getEmail()))
                     .collect(Collectors.toList());
 
@@ -100,7 +113,7 @@ public class UserServiceImpl implements UserService {
         if (addIds != null) {
             for (Long empId : addIds) {
                 User emp = userRepository.findById(empId).orElseThrow();
-                emp.setManager(user);
+                emp.setAgent(user);
                 userRepository.save(emp);
             }
         }
@@ -108,7 +121,7 @@ public class UserServiceImpl implements UserService {
         if (removeIds != null) {
             for (Long empId : removeIds) {
                 User emp = userRepository.findById(empId).orElseThrow();
-                emp.setManager(null);
+                emp.setAgent(user);
                 userRepository.save(emp);
             }
         }
@@ -118,6 +131,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User registerNewUser(User user, List<String> roleNames) {
+        System.out.println("Registering new user: " + user.getEmail());
+        System.out.println("Roles requested: " + roleNames);
+
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email already exists.");
         }
@@ -125,13 +141,19 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         Set<Role> roles = roleNames.stream()
-                .map(name -> roleRepository.findByName(name)
-                        .orElseThrow(() -> new IllegalArgumentException("Role not found: " + name)))
+                .map(name -> {
+                    Role role = roleRepository.findByName(name)
+                            .orElseThrow(() -> new IllegalArgumentException("Role not found: " + name));
+                    System.out.println("Resolved role: " + role.getName());
+                    return role;
+                })
                 .collect(Collectors.toSet());
 
         user.setRoles(roles);
+        user.setEnabled(true); // ← just to be sure
         return userRepository.save(user);
     }
+
 
     @Override
     public List<User> getAllUsers() {
@@ -140,7 +162,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getTeamForCurrentManager() {
-        return userRepository.findByManager(getCurrentUser());
+        return userRepository.findByAgent(getCurrentUser());
     }
 
     @Override

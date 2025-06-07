@@ -1,75 +1,101 @@
 package edu.hingu.project.config;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import edu.hingu.project.entities.Property;
+import edu.hingu.project.entities.User;
 import edu.hingu.project.repositories.PropertyRepository;
-import jakarta.annotation.PostConstruct;
+import edu.hingu.project.repositories.UserRepository;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
 
-    @Autowired
-    private PropertyRepository propertyRepository;
-
-    @PostConstruct
-    public void updateAllImageFolders() {
-        List<Property> properties = propertyRepository.findAll();
-
-        for (Property p : properties) {
-            String cleanFolder = p.getTitle().replaceAll(" ", "_");
-            p.setImageFolder(cleanFolder);
-        }
-
-        propertyRepository.saveAll(properties);
-        System.out.println("✅ Updated all image folder names based on property title.");
-    }
+    @Autowired private PropertyRepository propertyRepository;
+    @Autowired private UserRepository userRepository;
+    @Autowired private JdbcTemplate jdbcTemplate;
 
     @Override
     public void run(String... args) {
-        updateAllImageFolders(); // Force update for existing properties
-        System.out.println("✅ Synced image folder names");
-        
-        // Uncomment this block below if you ever need to re-seed from CSV
-        /*
-        if (propertyRepository.count() == 0) {
-            System.out.println("Loading property data from CSV...");
+        System.out.println("🧹 Cleaning DB for dev...");
 
-            try (
-                CSVParser parser = CSVParser.parse(
-                    new ClassPathResource("homedata.csv").getInputStream(),
-                    StandardCharsets.UTF_8,
-                    CSVFormat.DEFAULT.withFirstRecordAsHeader()
-                )
-            ) {
-                for (CSVRecord record : parser) {
-                    try {
-                        Property property = new Property();
-                        property.setTitle(record.get("title").trim());
-                        property.setPrice(Double.parseDouble(record.get("price").trim()));
-                        property.setLocation(record.get("location").trim());
-                        property.setSize(Integer.parseInt(record.get("size").trim()));
-                        property.setDescription(record.get("description").trim());
+        jdbcTemplate.execute("DELETE FROM favorite");
+        jdbcTemplate.execute("DELETE FROM property_image");
+        jdbcTemplate.execute("DELETE FROM property");
+        jdbcTemplate.execute("ALTER TABLE property AUTO_INCREMENT = 1");
 
-                        // Raw folder for now — updated later by @PostConstruct
-                        property.setImageFolder(property.getTitle());
+        List<User> agents = userRepository.findAll().stream()
+            .filter(u -> u.getRoles().stream().anyMatch(r -> r.getName().equalsIgnoreCase("AGENT")))
+            .collect(Collectors.toList());
 
-                        propertyRepository.save(property);
-                    } catch (Exception e) {
-                        System.err.println("Skipping row due to error: " + e.getMessage());
-                    }
-                }
-                System.out.println("✅ Property data loaded successfully.");
-            } catch (Exception e) {
-                System.err.println("❌ Error loading data: " + e.getMessage());
-            }
-        } else {
-            System.out.println("🟡 Properties already exist, skipping initialization.");
+        if (agents.isEmpty()) {
+            System.err.println("❌ No AGENT users found.");
+            return;
         }
-        */
+
+        System.out.println("📥 Loading homedata.csv and assigning to agents...");
+
+        try (
+            CSVParser parser = CSVParser.parse(
+                new ClassPathResource("homedata.csv").getInputStream(),
+                StandardCharsets.UTF_8,
+                CSVFormat.DEFAULT.withFirstRecordAsHeader()
+            )
+        ) {
+            int agentIndex = 0;
+            int count = 0;
+            Set<String> insertedTitles = new HashSet<>();
+
+            for (CSVRecord record : parser) {
+                try {
+                    String title = record.get("title").trim();
+                    String folderName = title.replaceAll(" ", "_");
+
+                    // Skip duplicates based on title
+                    if (insertedTitles.contains(title)) continue;
+
+                    File folder = new File("src/main/resources/static/images/property-images/" + folderName);
+                    if (!folder.exists()) {
+                        System.err.println("⚠️ Skipping: Missing image folder -> " + folderName);
+                        continue;
+                    }
+
+                    Property property = new Property();
+                    property.setTitle(title);
+                    property.setPrice(Double.parseDouble(record.get("price").trim()));
+                    property.setLocation(record.get("location").trim());
+                    property.setSize(Integer.parseInt(record.get("size").trim()));
+                    property.setDescription(record.get("description").trim());
+                    property.setImageFolder(folderName);
+
+                    User agent = agents.get(agentIndex % agents.size());
+                    property.setOwner(agent);
+                    agentIndex++;
+
+                    propertyRepository.save(property);
+                    insertedTitles.add(title);
+                    count++;
+                } catch (Exception e) {
+                    System.err.println("❌ Skipped a row: " + e.getMessage());
+                }
+            }
+
+            System.out.println("✅ Loaded " + count + " properties.");
+        } catch (Exception e) {
+            System.err.println("❌ CSV read error: " + e.getMessage());
+        }
     }
 }

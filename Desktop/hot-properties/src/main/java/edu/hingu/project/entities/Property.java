@@ -1,19 +1,23 @@
 package edu.hingu.project.entities;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
 @Entity
+@Table(name = "properties")
 public class Property {
 
     @Id
@@ -22,25 +26,42 @@ public class Property {
 
     private String title;
 
-    @Column(length = 2000)
+    @Column(length = 5000)
     private String description;
 
     private String location;
-    //private String zipCode;
+
     private double price;
     private int size;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "owner_id") // creates owner_id column
     private User owner;
 
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PropertyImage> images;
 
-    // ✅ NEW FIELD
-    private String imageFolder; // e.g. "1741 N Mozart St"
+    private String imageFolder;
+
+    @Transient
+    private String tempImagePath;
+
+    @Transient
+    private List<String> imageUrls;
+
+    // ✅ NEW: Link to favorites
+    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<Favorite> favorites = new ArrayList<>(); 
 
     // --- Getters and Setters ---
+
+    public List<Favorite> getFavorites() {
+        if (favorites == null) {
+            favorites = new ArrayList<>();
+        }
+        return favorites;
+    }
+    
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -54,9 +75,6 @@ public class Property {
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
 
-   /*  public String getZipCode() { return zipCode; }
-    public void setZipCode(String zipCode) { this.zipCode = zipCode; } */
-
     public double getPrice() { return price; }
     public void setPrice(double price) { this.price = price; }
 
@@ -69,25 +87,14 @@ public class Property {
     public List<PropertyImage> getImages() { return images; }
     public void setImages(List<PropertyImage> images) { this.images = images; }
 
-    @Transient
-    private String tempImagePath;
+    public String getImageFolder() { return imageFolder; }
+    public void setImageFolder(String imageFolder) { this.imageFolder = imageFolder; }
 
-    public String getTempImagePath() {
-        return tempImagePath;
-    }
+    public String getTempImagePath() { return tempImagePath; }
+    public void setTempImagePath(String tempImagePath) { this.tempImagePath = tempImagePath; }
 
-    public void setTempImagePath(String tempImagePath) {
-        this.tempImagePath = tempImagePath;
-    }
-
-    // ✅ New Getter/Setter
-    public String getImageFolder() {
-        return imageFolder;
-    }
-
-    public void setImageFolder(String imageFolder) {
-        this.imageFolder = imageFolder;
-    }
+    public List<String> getImageUrls() { return imageUrls; }
+    public void setImageUrls(List<String> imageUrls) { this.imageUrls = imageUrls; }
 
     public String getThumbnailPath() {
         if (imageFolder != null && !imageFolder.isBlank()) {
@@ -103,5 +110,11 @@ public class Property {
         }
         return "/images/placeholder.jpg";
     }
+
+    // ✅ Favorites getters and setters
     
+
+    public void setFavorites(List<Favorite> favorites) {
+        this.favorites = favorites;
+    }
 }

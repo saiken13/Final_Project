@@ -21,7 +21,7 @@ public interface PropertyService {
     List<Property> filterByPrice(Double minPrice, Double maxPrice);
 
     List<Property> getPropertiesByOwner(User owner);
-    
+
     List<Property> getFavoritesByUser(User user);
 
 
@@ -30,4 +30,7 @@ public interface PropertyService {
     // ✅ Favorite-related methods
     boolean toggleFavorite(User user, Property property);
     boolean isFavoritedByUser(User user, Property property);
+
+    List<Property> getPropertiesByUser(User user);
+
 }

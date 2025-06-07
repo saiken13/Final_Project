@@ -90,16 +90,17 @@
         <div class="dashboard-links">
             <a th:href="@{/profile}">My Profile</a>
 
+            <div sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/admin/users}">Manage Users</a>
+                <a th:href="@{/admin/create-agent}">Create Agent</a>
+            </div>
+
             <div sec:authorize="hasRole('AGENT')">
                 <a th:href="@{/properties/manage}">Manage Listings</a>
                 <a th:href="@{/properties/new}">Add New Property</a>
                 <a th:href="@{/messages}">
-                    View Messages <span class="message-badge">3</span> <!-- Replace 3 with a dynamic badge if needed -->
+                    View Messages <span class="message-badge">3</span>
                 </a>
-            </div>
-
-            <div sec:authorize="hasRole('ADMIN')">
-                <a th:href="@{/admin/users}">Manage Users</a>
             </div>
 
             <div sec:authorize="hasRole('BUYER')">

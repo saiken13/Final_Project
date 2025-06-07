@@ -2,6 +2,7 @@ package edu.hingu.project.controllers;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.core.io.Resource;
@@ -150,12 +151,7 @@ public class UserAccountController {
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/users")
-    public String viewAllUsers(Model model) {
-        model.addAttribute("users", userService.getAllUsers());
-        return "all_users";
-    }
+    
 
     @PreAuthorize("hasRole('AGENT')")
     @GetMapping("/manager/team")
@@ -225,4 +221,41 @@ public class UserAccountController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GetMapping("/admin/create-agent")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String showCreateAgentForm(Model model) {
+        model.addAttribute("user", new User());
+        return "create-agent";
+    }
+
+    @PostMapping("/admin/create-agent")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String createAgent(@ModelAttribute User user, RedirectAttributes redirectAttributes) {
+        try {
+            userService.registerNewUser(user, Collections.singletonList("AGENT"));
+            redirectAttributes.addFlashAttribute("successMessage", "Agent created successfully.");
+            return "redirect:/dashboard";
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to create agent: " + e.getMessage());
+            return "redirect:/admin/create-agent";
+        }
+    }
+
+
+
+    @GetMapping("/admin/users")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String viewAllUsers(Model model) {
+        List<User> allUsers = userService.getAllUsers();
+
+        for (User user : allUsers) {
+            System.out.println("User: " + user.getEmail() + " → Roles: " + user.getRoles());
+        }
+
+        model.addAttribute("users", allUsers);
+        return "manage-users";
+    }
+
 }

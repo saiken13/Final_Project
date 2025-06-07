@@ -51,12 +51,13 @@ public class UserRoleInitializer {
 
             User u10 = new User("henry.wallace", passwordEncoder.encode("hw.123"), "Henry", "Wallace", "henry.wallace@email.com", Set.of(roleAdmin), "image10.jpg");
 
-            u7.addEmployee(u1);
-            u7.addEmployee(u2);
-            u8.addEmployee(u3);
-            u8.addEmployee(u4);
-            u9.addEmployee(u5);
-            u9.addEmployee(u6);
+            u7.addClient(u1);
+            u7.addClient(u2);
+            u7.addClient(u3);
+            u8.addClient(u4);
+            u8.addClient(u5);
+            u9.addClient(u6);
+
 
             userRepository.saveAll(List.of(u1, u2, u3, u4, u5, u6, u7, u8, u9, u10));
             System.out.println("🟢 Initial users and roles inserted.");

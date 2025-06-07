@@ -1,3 +1,4 @@
+// --- FIXED: SecurityConfig.java ---
 package edu.hingu.project.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,17 +45,23 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.GET, "/register", "/login").permitAll()
+                // Public GET & POST endpoints
+                .requestMatchers(HttpMethod.GET, "/register", "/login", "/browse", "/details/**", "/error").permitAll()
                 .requestMatchers(HttpMethod.POST, "/register", "/login").permitAll()
-                .requestMatchers("/", "/index", "/css/**", "/js/**", "/images/**", "/webjars/**", "/profile-pictures/**").permitAll()
 
-                // Role-based access
+                // Static resources
+                .requestMatchers("/", "/index",
+                    "/css/**", "/js/**", "/images/**", "/webjars/**",
+                    "/profile-pictures/**", "/static/**", "/uploads/**")
+                    .permitAll()
+
+                // Role-specific
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/manager/**").hasRole("AGENT") // ✅ now AGENT instead of MANAGER
-                .requestMatchers("/browse", "/favorites", "/details/**", "/error").permitAll()// ✅ now BUYER instead of USER
+                .requestMatchers("/agent/**").hasRole("AGENT")
                 .requestMatchers("/dashboard", "/profile", "/settings")
                     .hasAnyRole("BUYER", "AGENT", "ADMIN")
 
+                // Everything else
                 .anyRequest().authenticated()
             )
             .addFilterBefore(globalRateLimiterFilter, UsernamePasswordAuthenticationFilter.class)
@@ -67,6 +74,7 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder encoder) {
