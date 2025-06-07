@@ -285,8 +285,13 @@ public class PropertyWebController {
                             RedirectAttributes redirectAttributes) {
 
         try {
+            // ✅ Assign logged-in agent as owner
+            User agentUser = userService.getCurrentUser();
+            property.setOwner(agentUser);  // 🔥 This was missing
+
             Property savedProperty = propertyService.saveProperty(property);
             propertyService.updatePropertyWithImages(savedProperty, images);
+
             redirectAttributes.addFlashAttribute("successMessage", "Property added successfully!");
         } catch (Exception e) {
             e.printStackTrace();
@@ -295,5 +300,6 @@ public class PropertyWebController {
 
         return "redirect:/properties/manage";
     }
+
 
 }

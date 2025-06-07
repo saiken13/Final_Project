@@ -53,7 +53,6 @@
         <img src="/images/placeholder.jpg" class="img-fluid mb-4" alt="No image available">
     </div>
 
-    <!-- ✅ AJAX Favorite Toggle -->
     <div class="mb-3">
         <button id="favoriteBtn"
                 class="btn"
@@ -64,7 +63,20 @@
         </button>
     </div>
 
-    <a th:href="@{/browse}" class="btn btn-secondary">Back to Browse</a>
+    <!-- ✅ Message Form -->
+    <div class="mt-5">
+        <h4>Contact the Agent</h4>
+        <form th:action="@{'/messages/send/' + ${property.id}}" method="post">
+            <div class="mb-3">
+                <label for="message" class="form-label">Your Message:</label>
+                <textarea class="form-control" id="message" name="content" rows="4" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Send Message</button>
+            <a th:href="@{/browse}" class="btn btn-link">← Back to Listings</a>
+        </form>
+    </div>
+
+    <a th:href="@{/browse}" class="btn btn-secondary mt-4">Back to Browse</a>
 </div>
 
 <footer class="bg-light text-center py-3">

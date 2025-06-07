@@ -117,4 +117,16 @@ public class Property {
     public void setFavorites(List<Favorite> favorites) {
         this.favorites = favorites;
     }
+
+    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
+private List<Message> messages = new ArrayList<>();
+
+public List<Message> getMessages() {
+    return messages;
+}
+
+public void setMessages(List<Message> messages) {
+    this.messages = messages;
+}
+
 }

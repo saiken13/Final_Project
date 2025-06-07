@@ -9,4 +9,9 @@ public interface MessageService {
     List<Message> getMessagesForAgent(User agent);
     Message getById(Long id);
     void deleteMessageById(Long id);
+    List<Message> getMessagesBySender(User sender);
+
+
+    void save(Message message);
+
 }

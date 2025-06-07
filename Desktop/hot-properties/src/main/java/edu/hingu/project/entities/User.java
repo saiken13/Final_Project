@@ -81,6 +81,11 @@ public class User {
     // --- Getters and Setters ---
     public Long getId() { return id; }
 
+    public String getName() {
+        return firstName + " " + lastName;
+    }
+    
+
     public void setId(Long id) { this.id = id; }
 
     public String getUsername() { return username; }

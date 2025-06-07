@@ -1,11 +1,12 @@
 package edu.hingu.project.services;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import edu.hingu.project.entities.Message;
 import edu.hingu.project.entities.User;
 import edu.hingu.project.repositories.MessageRepository;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class MessageServiceImpl implements MessageService {
@@ -16,10 +17,10 @@ public class MessageServiceImpl implements MessageService {
         this.messageRepository = messageRepository;
     }
 
-    @Override
-    public List<Message> getMessagesForAgent(User agent) {
-        return messageRepository.findByPropertyOwner(agent);
-    }
+    // @Override
+    // public List<Message> getMessagesForAgent(User agent) {
+    //     return messageRepository.findByPropertyOwner(agent);
+    // }
 
     @Override
     public Message getById(Long id) {
@@ -30,4 +31,24 @@ public class MessageServiceImpl implements MessageService {
     public void deleteMessageById(Long id) {
         messageRepository.deleteById(id);
     }
+
+    @Override
+    public void save(Message message) {
+    messageRepository.save(message);
+}
+
+    @Override
+    public List<Message> getMessagesForAgent(User agent) {
+        List<Message> messages = messageRepository.findByPropertyOwner(agent);
+        System.out.println("🧠 Messages fetched for " + agent.getEmail() + ": " + messages.size());
+        return messages;
+    }
+
+    @Override
+    public List<Message> getMessagesBySender(User sender) {
+        return messageRepository.findBySenderId(sender.getId());
+    }
+
+
+
 }

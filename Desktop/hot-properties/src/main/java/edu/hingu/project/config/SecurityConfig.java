@@ -1,4 +1,4 @@
-// --- FIXED: SecurityConfig.java ---
+// --- UPDATED: SecurityConfig.java ---
 package edu.hingu.project.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +17,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
 import edu.hingu.project.services.CustomUserDetailsService;
 import edu.hingu.project.utils.GlobalRateLimiterFilter;
@@ -39,6 +41,11 @@ public class SecurityConfig {
         this.globalRateLimiterFilter = globalRateLimiterFilter;
     }
 
+    @ModelAttribute("_csrf")
+    public CsrfToken csrfToken(CsrfToken token) {
+        return token;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -48,6 +55,9 @@ public class SecurityConfig {
                 // Public GET & POST endpoints
                 .requestMatchers(HttpMethod.GET, "/register", "/login", "/browse", "/details/**", "/error").permitAll()
                 .requestMatchers(HttpMethod.POST, "/register", "/login").permitAll()
+
+                // ✅ Allow BUYER to send messages
+                .requestMatchers(HttpMethod.POST, "/messages/send/**").hasRole("BUYER")
 
                 // Static resources
                 .requestMatchers("/", "/index",
@@ -74,7 +84,6 @@ public class SecurityConfig {
 
         return http.build();
     }
-
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder encoder) {

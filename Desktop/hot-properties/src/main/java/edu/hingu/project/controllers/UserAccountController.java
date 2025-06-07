@@ -100,6 +100,8 @@ public String processLogin(@ModelAttribute("user") User user, HttpServletRespons
         return "edit-profile";
     }
 
+
+
     @PostMapping("/edit-profile")
     @PreAuthorize("hasAnyRole('BUYER', 'AGENT', 'ADMIN')")
     public String updateSettings(@ModelAttribute("user") User updatedUser,
