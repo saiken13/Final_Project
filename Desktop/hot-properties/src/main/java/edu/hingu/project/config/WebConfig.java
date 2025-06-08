@@ -11,16 +11,20 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // ✅ For static images from /static/images in classpath
+        // ✅ Serve images from classpath (static resources)
         registry.addResourceHandler("/images/**")
                 .addResourceLocations("classpath:/static/images/");
 
-        // ✅ For uploaded profile pictures from local file system
+        // ✅ Serve uploaded profile pictures from file system
         String uploadDir = Paths.get(System.getProperty("user.dir"), "uploads", "profile-pictures")
-                                 .toAbsolutePath()
-                                 .toString();
-
+                                 .toAbsolutePath().toString();
         registry.addResourceHandler("/profile-pictures/**")
                 .addResourceLocations("file:" + uploadDir + "/");
+
+        // ✅ Serve uploaded property images (if not packed in classpath)
+        String propertyImgDir = Paths.get("src/main/resources/static/images/property-images")
+                                     .toAbsolutePath().toString();
+        registry.addResourceHandler("/images/property-images/**")
+                .addResourceLocations("file:" + propertyImgDir + "/");
     }
 }

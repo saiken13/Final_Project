@@ -226,19 +226,20 @@ public class PropertyServiceImpl implements PropertyService {
         }
     }
 
-    @Override
     public Property saveProperty(Property property) {
+        if (property.getTitle() == null || property.getTitle().isBlank()) {
+            throw new IllegalArgumentException("Title is required");
+        }
+    
         if (property.getImageFolder() == null || property.getImageFolder().isBlank()) {
             property.setImageFolder(property.getTitle().replaceAll(" ", "_"));
         }
     
         if (property.getOwner() == null) {
             User currentUser = userService.getCurrentUser();
-            boolean isAgent = currentUser.getRoles().stream()
-                .anyMatch(role -> role.getName().equalsIgnoreCase("AGENT"));
-    
-            if (!isAgent) {
-                throw new IllegalArgumentException("Property must have an assigned owner.");
+            if (currentUser == null || currentUser.getRoles().stream()
+                    .noneMatch(role -> role.getName().equalsIgnoreCase("AGENT"))) {
+                throw new IllegalArgumentException("Property must have an assigned agent owner.");
             }
     
             property.setOwner(currentUser);
@@ -246,31 +247,33 @@ public class PropertyServiceImpl implements PropertyService {
     
         return propertyRepository.save(property);
     }
+    
 
-@Override
-public void updatePropertyWithImages(Property property, MultipartFile[] images) {
-    if (images != null && images.length > 0) {
-        String folder = property.getImageFolder();
-        Path folderPath = Paths.get("src/main/resources/static/images/property-images/" + folder);
-
-        try {
-            if (!Files.exists(folderPath)) {
-                Files.createDirectories(folderPath);
-            }
-
-            for (MultipartFile image : images) {
-                if (!image.isEmpty()) {
-                    Path filePath = folderPath.resolve(image.getOriginalFilename());
-                    Files.write(filePath, image.getBytes());
+    @Override
+    public void updatePropertyWithImages(Property property, MultipartFile[] images) {
+        if (images != null && images.length > 0) {
+            String folder = property.getImageFolder();
+            Path folderPath = Paths.get("src/main/resources/static/images/property-images/" + folder);
+    
+            try {
+                if (!Files.exists(folderPath)) {
+                    Files.createDirectories(folderPath);
                 }
+    
+                for (MultipartFile image : images) {
+                    if (image != null && !image.isEmpty()) {
+                        Path filePath = folderPath.resolve(image.getOriginalFilename());
+                        Files.write(filePath, image.getBytes());
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+    
+        propertyRepository.save(property); // ✅ Save even if no images
     }
-
-    propertyRepository.save(property);
-}
+    
 
 
 }

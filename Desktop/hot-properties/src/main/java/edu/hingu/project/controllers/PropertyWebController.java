@@ -284,20 +284,31 @@ public class PropertyWebController {
 
     @GetMapping("/properties/new")
     @PreAuthorize("hasRole('AGENT')")
-    public String showAddPropertyForm(Model model) {
+    public String showAddPropertyForm(Model model, HttpServletRequest request) {
         System.out.println("🧪 Current authorities:");
         SecurityContextHolder.getContext().getAuthentication().getAuthorities()
             .forEach(auth -> System.out.println(" - " + auth.getAuthority()));
+
+        // ✅ Fetch CSRF token from request and pass to Thymeleaf
+        CsrfToken csrfToken = (CsrfToken) request.getAttribute("_csrf");
+        model.addAttribute("_csrf", csrfToken);
+
         model.addAttribute("property", new Property());
         return "add-property";
     }
+
 
 
     @PostMapping("/properties/new")
     @PreAuthorize("hasRole('AGENT')")
     public String addProperty(@ModelAttribute("property") Property property,
                             @RequestParam("images") MultipartFile[] images,
-                            RedirectAttributes redirectAttributes) {
+                            RedirectAttributes redirectAttributes,
+                            HttpServletRequest request) {
+
+        // ✅ Log CSRF info for debugging
+        CsrfToken csrfToken = (CsrfToken) request.getAttribute("_csrf");
+        System.out.println("🛡️ CSRF Token (from request): " + csrfToken.getToken());
 
         try {
             Property savedProperty = propertyService.saveProperty(property);
@@ -305,11 +316,12 @@ public class PropertyWebController {
             redirectAttributes.addFlashAttribute("successMessage", "Property added successfully!");
         } catch (Exception e) {
             e.printStackTrace();
-            redirectAttributes.addFlashAttribute("errorMessage", "Failed to add property.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to add property: " + e.getMessage());
         }
 
         return "redirect:/properties/manage";
     }
+
 
 
 

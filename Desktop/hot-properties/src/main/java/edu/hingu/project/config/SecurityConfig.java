@@ -1,4 +1,3 @@
-// --- UPDATED: SecurityConfig.java ---
 package edu.hingu.project.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +38,6 @@ public class SecurityConfig {
         this.globalRateLimiterFilter = globalRateLimiterFilter;
     }
 
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -47,37 +45,37 @@ public class SecurityConfig {
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             )
 
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)  // ✅ Enable session for CSRF support
+            )
+
             .authorizeHttpRequests(auth -> auth
-                // Public GET & POST endpoints
                 .requestMatchers(HttpMethod.GET, "/register", "/login", "/browse", "/details/**", "/error").permitAll()
                 .requestMatchers(HttpMethod.POST, "/register", "/login").permitAll()
-
-                // ✅ Allow BUYER to send messages
-                .requestMatchers(HttpMethod.POST, "/messages/send/**").hasRole("BUYER")
                 
-                .requestMatchers(HttpMethod.GET, "/properties/new").hasRole("AGENT")
-                .requestMatchers(HttpMethod.POST, "/properties/new").hasRole("AGENT")
+                // Buyer-specific
+                .requestMatchers(HttpMethod.POST, "/messages/send/**").hasRole("BUYER")
+                .requestMatchers("/favorites/**").hasRole("BUYER")
 
+                // Agent-specific (for property CRUD)
+                .requestMatchers("/properties/new", "/properties/manage", "/properties/edit/**", "/properties/delete/**").hasRole("AGENT")
+                .requestMatchers(HttpMethod.POST, "/properties/**").hasRole("AGENT")
 
                 // Static resources
-                .requestMatchers("/", "/index",
-                    "/css/**", "/js/**", "/images/**", "/webjars/**",
-                    "/profile-pictures/**", "/static/**", "/uploads/**")
-                    .permitAll()
+                .requestMatchers("/", "/index", "/css/**", "/js/**", "/images/**", "/webjars/**",
+                                 "/profile-pictures/**", "/static/**", "/uploads/**").permitAll()
 
-                // Role-specific
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/agent/**").hasRole("AGENT")
-                .requestMatchers("/dashboard", "/profile", "/settings")
-                    .hasAnyRole("BUYER", "AGENT", "ADMIN")
+                // Shared dashboard/profile/settings
+                .requestMatchers("/dashboard", "/profile", "/settings").hasAnyRole("BUYER", "AGENT", "ADMIN")
 
-                // Everything else
                 .anyRequest().authenticated()
             )
+
             .addFilterBefore(globalRateLimiterFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+
             .httpBasic(Customizer.withDefaults())
+
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
                 .accessDeniedHandler(new CustomAccessDeniedHandler())
