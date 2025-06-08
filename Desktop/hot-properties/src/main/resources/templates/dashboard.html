@@ -47,6 +47,10 @@
         .dashboard-links a:hover {
             text-decoration: underline;
         }
+        .navbar-brand img {
+            height: 100px;
+            margin-right: 10px;
+        }
         .message-badge {
             display: inline-block;
             background-color: red;
@@ -73,7 +77,6 @@
     <div class="container">
         <a class="navbar-brand d-flex align-items-center" href="/">
             <img src="/images/logo.jpeg" height="48" alt="Logo" class="me-2">
-            <strong>Hot Properties</strong>
         </a>
     </div>
 </nav>
@@ -98,9 +101,6 @@
             <div sec:authorize="hasRole('AGENT')">
                 <a th:href="@{/properties/manage}">Manage Listings</a>
                 <a th:href="@{/properties/new}">Add New Property</a>
-                <a th:href="@{/messages}">
-                    View Messages <span class="message-badge">3</span>
-                </a>
             </div>
 
             <div sec:authorize="hasRole('BUYER')">

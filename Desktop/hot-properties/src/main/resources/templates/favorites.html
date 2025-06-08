@@ -20,15 +20,26 @@
             object-fit: cover;
             border-radius: 8px;
         }
+        .navbar-brand img {
+            height: 100px;
+            margin-right: 10px;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
         .remove-btn {
             margin-top: 10px;
         }
-    </style>
+    </style>    
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
-        <a class="navbar-brand" href="/">Hot Properties</a>
+        <a class="navbar-brand" href="/" style="display: flex; align-items: center;">
+            <img src="/images/logo.jpeg" alt="Logo" style="height: 100px; margin-right: 10px;">
+        </a>        
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item"><a class="nav-link" th:href="@{/browse}">Browse</a></li>

@@ -15,6 +15,12 @@
             border-radius: 50%;
             border: 2px solid #ddd;
         }
+
+        .navbar-brand img {
+            height: 100px;
+            margin-right: 10px;
+        }
+
         th, td {
             vertical-align: middle;
         }
@@ -35,7 +41,9 @@
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
-        <a class="navbar-brand" href="/">Hot Properties</a>
+        <a class="navbar-brand" href="/">
+            <img src="/images/logo.jpeg" alt="Logo"> Hot Properties
+        </a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item"><a class="nav-link" th:href="@{/dashboard}">Dashboard</a></li>
@@ -52,7 +60,6 @@
         <table class="table table-bordered table-hover align-middle text-center">
             <thead class="table-dark">
                 <tr>
-                    <th>ID</th>
                     <th>Photo</th>
                     <th>Full Name</th>
                     <th>Email</th>
@@ -61,7 +68,6 @@
             </thead>
             <tbody>
                 <tr th:each="user : ${users}">
-                    <td th:text="${user.id}">1</td>
                     <td>
                         <img th:if="${user.profilePicture != null and user.profilePicture != ''}"
                              th:src="@{'/profile-pictures/' + ${user.profilePicture}}"
