@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.csrf.CsrfToken; 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.ResourceUtils;
@@ -27,6 +29,7 @@ import edu.hingu.project.entities.Property;
 import edu.hingu.project.entities.User;
 import edu.hingu.project.services.PropertyService;
 import edu.hingu.project.services.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
 public class PropertyWebController {
@@ -119,22 +122,23 @@ public class PropertyWebController {
 
         if (property == null) {
             redirectAttributes.addFlashAttribute("errorMessage", "Property not found.");
-            return "redirect:/favorites";
+            return "redirect:/browse"; // optional fallback
         }
 
         if (propertyService.isFavoritedByUser(currentUser, property)) {
-            propertyService.toggleFavorite(currentUser, property);
+            propertyService.removeFavorite(currentUser, propertyId);
             redirectAttributes.addFlashAttribute("successMessage", "Removed from favorites.");
         } else {
             redirectAttributes.addFlashAttribute("infoMessage", "Property was not in your favorites.");
         }
 
-        return "redirect:/favorites";
+        return "redirect:/details/" + propertyId; // ✅ Redirect back to details
     }
+
 
     @GetMapping("/favorites")
     @PreAuthorize("hasRole('BUYER')")
-    public String viewFavorites(Model model) {
+    public String viewFavorites(Model model, HttpServletRequest request) {
         User currentUser = userService.getCurrentUser();
         List<Property> favorites = propertyService.getFavoritesByUser(currentUser);
 
@@ -160,9 +164,15 @@ public class PropertyWebController {
             property.setTempImagePath(imagePath);
         }
 
+        // ✅ Get CSRF token correctly for Spring MVC
+        CsrfToken csrfToken = (CsrfToken) request.getAttribute("_csrf");
+        model.addAttribute("_csrf", csrfToken); // ✅ Safe now
+
         model.addAttribute("favorites", favorites);
         return "favorites";
     }
+
+
 
     @GetMapping("/properties/manage")
     @PreAuthorize("hasRole('AGENT')")
@@ -274,9 +284,13 @@ public class PropertyWebController {
     @GetMapping("/properties/new")
     @PreAuthorize("hasRole('AGENT')")
     public String showAddPropertyForm(Model model) {
+        System.out.println("🧪 Current authorities:");
+        SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+            .forEach(auth -> System.out.println(" - " + auth.getAuthority()));
         model.addAttribute("property", new Property());
         return "add-property";
     }
+
 
     @PostMapping("/properties/new")
     @PreAuthorize("hasRole('AGENT')")
@@ -285,13 +299,8 @@ public class PropertyWebController {
                             RedirectAttributes redirectAttributes) {
 
         try {
-            // ✅ Assign logged-in agent as owner
-            User agentUser = userService.getCurrentUser();
-            property.setOwner(agentUser);  // 🔥 This was missing
-
             Property savedProperty = propertyService.saveProperty(property);
             propertyService.updatePropertyWithImages(savedProperty, images);
-
             redirectAttributes.addFlashAttribute("successMessage", "Property added successfully!");
         } catch (Exception e) {
             e.printStackTrace();
@@ -300,6 +309,7 @@ public class PropertyWebController {
 
         return "redirect:/properties/manage";
     }
+
 
 
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -27,6 +28,7 @@ import edu.hingu.project.repositories.PropertyRepository;
 import edu.hingu.project.repositories.RoleRepository;
 import edu.hingu.project.repositories.UserRepository;
 import edu.hingu.project.utils.CurrentUserContext;
+import jakarta.transaction.Transactional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -99,35 +101,46 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUserSettings(User updatedUser, String password, List<Long> addIds, List<Long> removeIds) {
-        User user = getCurrentUser();
+@Transactional
+public void updateUserSettings(User updatedUser, String password, List<Long> addIds, List<Long> removeIds) {
+    User dbUser = getCurrentUser(); // ← get fresh user from DB
 
-        user.setFirstName(updatedUser.getFirstName());
-        user.setLastName(updatedUser.getLastName());
-        user.setEmail(updatedUser.getEmail());
+    // Basic fields
+    dbUser.setFirstName(updatedUser.getFirstName());
+    dbUser.setLastName(updatedUser.getLastName());
+    dbUser.setEmail(updatedUser.getEmail());
 
-        if (password != null && !password.isBlank()) {
-            user.setPassword(passwordEncoder.encode(password));
-        }
-
-        if (addIds != null) {
-            for (Long empId : addIds) {
-                User emp = userRepository.findById(empId).orElseThrow();
-                emp.setAgent(user);
-                userRepository.save(emp);
-            }
-        }
-
-        if (removeIds != null) {
-            for (Long empId : removeIds) {
-                User emp = userRepository.findById(empId).orElseThrow();
-                emp.setAgent(user);
-                userRepository.save(emp);
-            }
-        }
-
-        userRepository.save(user);
+    // ✅ Handle password
+    if (password != null && !password.isBlank()) {
+        dbUser.setPassword(passwordEncoder.encode(password));
     }
+
+    // ✅ Assign new team if any (for agents)
+    if (addIds != null) {
+        for (Long empId : addIds) {
+            User emp = userRepository.findById(empId).orElseThrow();
+            emp.setAgent(dbUser);
+            userRepository.save(emp);
+        }
+    }
+
+    if (removeIds != null) {
+        for (Long empId : removeIds) {
+            User emp = userRepository.findById(empId).orElseThrow();
+            emp.setAgent(null);
+            userRepository.save(emp);
+        }
+    }
+
+    // ✅ Save final user (with correct profile picture if already set)
+    userRepository.save(dbUser);
+}
+
+
+
+    
+
+
 
     @Override
     public User registerNewUser(User user, List<String> roleNames) {
@@ -169,6 +182,7 @@ public class UserServiceImpl implements UserService {
     public String storeProfilePicture(Long userId, MultipartFile file) {
         try {
             String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            System.out.println("📂 Saving profile picture as: " + filename);
 
             Path uploadPath = Paths.get(System.getProperty("user.dir"), "uploads", "profile-pictures");
             Files.createDirectories(uploadPath);
@@ -183,16 +197,17 @@ public class UserServiceImpl implements UserService {
             Path filePath = uploadPath.resolve(filename);
             file.transferTo(filePath.toFile());
 
-            user.setProfilePicture(filename);
-            userRepository.save(user);
+            System.out.println("✅ Profile picture saved at: " + filePath);
 
             return filename;
 
         } catch (IOException ex) {
-            System.out.println("Failed to save file: " + ex.getMessage());
+            System.out.println("❌ Failed to save file: " + ex.getMessage());
             throw new RuntimeException("Failed to store profile picture", ex);
         }
     }
+
+
 
     @Override
     public User updateUser(User savedUser) {
@@ -237,6 +252,28 @@ public class UserServiceImpl implements UserService {
     public void prepareManagePropertiesModel(Model model) {
         User currentUser = getCurrentUser();
         List<Property> properties = propertyRepository.findByOwner(currentUser);
+
+        for (Property property : properties) {
+            List<String> imageUrls = new ArrayList<>();
+            String folder = property.getImageFolder();
+
+            if (folder != null && !folder.isEmpty()) {
+                Path folderPath = Paths.get("src/main/resources/static/images/property-images/" + folder);
+                try {
+                    if (Files.exists(folderPath)) {
+                        Files.list(folderPath)
+                            .filter(Files::isRegularFile)
+                            .forEach(path -> imageUrls.add(folder + "/" + path.getFileName().toString()));
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            property.setImageUrls(imageUrls);
+        }
+
         model.addAttribute("properties", properties);
     }
+
 }

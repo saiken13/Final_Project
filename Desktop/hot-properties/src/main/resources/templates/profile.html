@@ -63,6 +63,15 @@
             display: flex;
             align-items: center;
         }
+
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            border: 3px solid #007bff;
+        }
     </style>
 </head>
 <body>
@@ -79,10 +88,17 @@
 <div class="profile-wrapper">
     <div class="profile-card">
         <h2>My Profile</h2>
-    
+
         <!-- ✅ Flash Message for Success -->
         <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-    
+
+        <!-- ✅ Profile Picture Display -->
+        <!-- ✅ If user has profile picture -->
+        <img th:src="${user.profilePicture} != null ? @{'/profile-pictures/' + ${user.profilePicture}} : @{'/images/default.jpg'}"
+            alt="Profile Picture"
+            class="profile-pic">
+
+
         <div class="profile-info">
             <p><strong>First Name:</strong> <span th:text="${user.firstName}">First</span></p>
             <p><strong>Last Name:</strong> <span th:text="${user.lastName}">Last</span></p>
@@ -91,14 +107,14 @@
                 <span sec:authorize="hasRole('ROLE_ADMIN')">ADMIN</span>
                 <span sec:authorize="hasRole('ROLE_AGENT')">AGENT</span>
                 <span sec:authorize="hasRole('ROLE_BUYER')">BUYER</span>
-            </p>            
+            </p>
         </div>
+
         <div class="btn-group">
             <a th:href="@{/edit-profile}" class="btn btn-primary">Edit Profile</a>
             <a th:href="@{/dashboard}" class="btn btn-secondary">Back to Dashboard</a>
         </div>
     </div>
-    
 </div>
 
 <footer>

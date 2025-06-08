@@ -5,8 +5,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -74,10 +76,48 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Override
     public List<Property> getFavoritesByUser(User user) {
+        if (user == null) {
+            System.out.println("❌ User is null in getFavoritesByUser");
+            return Collections.emptyList();
+        }
+
         List<Favorite> favorites = favoriteRepository.findByBuyerId(user.getId());
+
+        // 🔍 Debug print to verify DB state
+        System.out.println("🔥 Current favorites for user " + user.getEmail() + ":");
+        for (Favorite f : favorites) {
+            if (f.getProperty() != null) {
+                System.out.println(" - Property ID: " + f.getProperty().getId() + " | Title: " + f.getProperty().getTitle());
+            } else {
+                System.out.println(" - ⚠️ Property is null in Favorite ID: " + f.getId());
+            }
+        }
+
         return favorites.stream()
                 .map(Favorite::getProperty)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+    
+    @Override
+    public void removeFavorite(User user, Long propertyId) {
+        Property property = propertyRepository.findById(propertyId)
+        .orElseThrow(() -> new RuntimeException("Property not found"));
+
+
+        User managedUser = userService.getUserById(user.getId())
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Optional<Favorite> favoriteOpt = favoriteRepository.findByBuyerAndProperty(managedUser, property);
+
+        if (favoriteOpt.isPresent()) {
+            favoriteRepository.delete(favoriteOpt.get());
+            favoriteRepository.flush();  // Force commit
+            System.out.println("🔥 Deleted favorite for propertyId = " + propertyId);
+        } else {
+            System.out.println("❌ Favorite NOT found for user " + managedUser.getEmail());
+        }
     }
 
     @Override
@@ -113,24 +153,24 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Override
     public boolean toggleFavorite(User user, Property property) {
-        // ❌ This is too late, because the property object may be detached/stale
-        // ✅ FIX: Re-fetch the property by ID from DB before proceeding
-        Optional<Property> existingProperty = propertyRepository.findById(property.getId());
+        // Re-fetch fresh managed User from DB
+        User managedUser = userService.getUserById(user.getId())
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        if (existingProperty.isEmpty()) {
-            throw new IllegalArgumentException("❌ Property with ID " + property.getId() + " does not exist in the database.");
-        }
+        // Re-fetch fresh managed Property from DB
+        Property managedProperty = propertyRepository.findById(property.getId())
+            .orElseThrow(() -> new IllegalArgumentException("Property not found"));
 
-        property = existingProperty.get();
+        // Try to find existing favorite
+        Optional<Favorite> existing = favoriteRepository.findByBuyerAndProperty(managedUser, managedProperty);
 
-        Optional<Favorite> existing = favoriteRepository.findByBuyerAndProperty(user, property);
         if (existing.isPresent()) {
             favoriteRepository.delete(existing.get());
             return false;
         } else {
             Favorite favorite = new Favorite();
-            favorite.setBuyer(user);
-            favorite.setProperty(property);
+            favorite.setBuyer(managedUser);
+            favorite.setProperty(managedProperty);
             favorite.setCreatedAt(LocalDateTime.now());
             favoriteRepository.save(favorite);
             return true;
@@ -140,14 +180,38 @@ public class PropertyServiceImpl implements PropertyService {
 
 
 
+
+
     @Override
     public boolean isFavoritedByUser(User user, Property property) {
-        return favoriteRepository.findByBuyerAndProperty(user, property).isPresent();
+        User managedUser = userService.getUserById(user.getId())
+        .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Property managedProperty = propertyRepository.findById(property.getId())
+                .orElseThrow(() -> new RuntimeException("Property not found"));
+
+        return favoriteRepository.findByBuyerAndProperty(managedUser, managedProperty).isPresent();
     }
+
 
     @Override
     public List<Property> getPropertiesByUser(User user) {
         return propertyRepository.findByOwnerId(user.getId());
+    }
+
+
+    @Override
+    public void deleteImage(Property property, String relativePath) {
+        try {
+            Path imagePath = Paths.get("src/main/resources/static/images/property-images").resolve(relativePath);
+            System.out.println("🧹 Deleting: " + imagePath.toAbsolutePath());
+
+            boolean deleted = Files.deleteIfExists(imagePath);
+            System.out.println(deleted ? "✅ Deleted image." : "❌ Image not found.");
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to delete image: " + relativePath, e);
+        }
     }
 
     @Override
@@ -171,48 +235,30 @@ public class PropertyServiceImpl implements PropertyService {
         return propertyRepository.save(property);
     }
 
-    @Override
-    public void deleteImage(Property property, String relativePath) {
-        try {
-            Path imagePath = Paths.get("src/main/resources/static/images/property-images").resolve(relativePath);
-            System.out.println("🧹 Deleting: " + imagePath.toAbsolutePath());
-
-            boolean deleted = Files.deleteIfExists(imagePath);
-            System.out.println(deleted ? "✅ Deleted image." : "❌ Image not found.");
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Failed to delete image: " + relativePath, e);
-        }
-    }
-
-
-    @Override
+@Override
 public void updatePropertyWithImages(Property property, MultipartFile[] images) {
     if (images != null && images.length > 0) {
         String folder = property.getImageFolder();
         Path folderPath = Paths.get("src/main/resources/static/images/property-images/" + folder);
 
-        if (!Files.exists(folderPath)) {
-            try {
+        try {
+            if (!Files.exists(folderPath)) {
                 Files.createDirectories(folderPath);
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-        }
 
-        for (MultipartFile image : images) {
-            if (!image.isEmpty()) {
-                try {
+            for (MultipartFile image : images) {
+                if (!image.isEmpty()) {
                     Path filePath = folderPath.resolve(image.getOriginalFilename());
                     Files.write(filePath, image.getBytes());
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     propertyRepository.save(property);
-
 }
+
+
 }

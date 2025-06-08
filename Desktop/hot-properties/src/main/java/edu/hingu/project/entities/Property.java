@@ -50,8 +50,9 @@ public class Property {
     private List<String> imageUrls;
 
     // ✅ NEW: Link to favorites
-    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<Favorite> favorites = new ArrayList<>(); 
+    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Favorite> favorites = new ArrayList<>();
+
 
     // --- Getters and Setters ---
 

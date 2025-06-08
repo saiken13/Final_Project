@@ -82,10 +82,10 @@
                     <td th:text="${property.size}">Size</td>
                     <td>
                         <img th:each="img : ${property.imageUrls}"
-                            th:src="@{'/uploads/' + ${img}}"
-                            class="property-thumb"/>
-                    </td>
-                    <td th:text="${property.favorites != null ? property.favorites.size() : 0}">0</td>
+                             th:src="@{'/images/property-images/' + ${img}}"
+                             class="property-thumb"/>
+                    </td>                    
+                    <td>0</td>
                     <td>
                         <a th:href="@{'/properties/edit/' + ${property.id}}" class="btn btn-primary btn-edit">Edit</a>
                         <a th:href="@{'/properties/delete/' + ${property.id}}"

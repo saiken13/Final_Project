@@ -85,15 +85,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (jwtUtil.validateToken(token, userDetails)) {
                 log.debug("✅ JWT token is valid");
-
+            
                 UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-
+            
+                // ✅ Force session creation to support CSRF
+                request.getSession(true);  // <---- ADD THIS LINE
+            
                 log.info("🔐 Authenticated user: {}", username);
-            } else {
+            }
+             else {
                 log.warn("❌ JWT token is invalid");
             }
 

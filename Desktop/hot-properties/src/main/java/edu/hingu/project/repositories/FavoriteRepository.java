@@ -18,4 +18,7 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
     
     // ✅ This is the correct method name
     Optional<Favorite> findByBuyerAndProperty(User buyer, Property property);
+
+    
+
 }

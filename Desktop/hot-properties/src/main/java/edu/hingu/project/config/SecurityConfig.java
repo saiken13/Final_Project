@@ -11,14 +11,12 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.csrf.CsrfToken;
-import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import edu.hingu.project.services.CustomUserDetailsService;
 import edu.hingu.project.utils.GlobalRateLimiterFilter;
@@ -41,15 +39,14 @@ public class SecurityConfig {
         this.globalRateLimiterFilter = globalRateLimiterFilter;
     }
 
-    @ModelAttribute("_csrf")
-    public CsrfToken csrfToken(CsrfToken token) {
-        return token;
-    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+            )
+
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 // Public GET & POST endpoints
@@ -58,6 +55,10 @@ public class SecurityConfig {
 
                 // ✅ Allow BUYER to send messages
                 .requestMatchers(HttpMethod.POST, "/messages/send/**").hasRole("BUYER")
+                
+                .requestMatchers(HttpMethod.GET, "/properties/new").hasRole("AGENT")
+                .requestMatchers(HttpMethod.POST, "/properties/new").hasRole("AGENT")
+
 
                 // Static resources
                 .requestMatchers("/", "/index",

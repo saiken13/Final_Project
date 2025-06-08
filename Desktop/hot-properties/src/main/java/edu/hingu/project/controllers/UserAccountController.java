@@ -53,23 +53,17 @@ public class UserAccountController {
         return "login";
     }
 
-    
-
-@PostMapping("/login")
-public String processLogin(@ModelAttribute("user") User user, HttpServletResponse response, Model model) {
-    try {
-        // ✅ Generate JWT and return Spring's ResponseCookie
-        ResponseCookie jwtCookie = authService.loginAndCreateJwtCookieByEmail(user);
-
-        // ✅ Add cookie to response header
-        response.addHeader("Set-Cookie", jwtCookie.toString());
-
-        return "redirect:/dashboard";
-    } catch (BadCredentialsException e) {
-        model.addAttribute("error", "Invalid email or password");
-        return "login";
+    @PostMapping("/login")
+    public String processLogin(@ModelAttribute("user") User user, HttpServletResponse response, Model model) {
+        try {
+            ResponseCookie jwtCookie = authService.loginAndCreateJwtCookieByEmail(user);
+            response.addHeader("Set-Cookie", jwtCookie.toString());
+            return "redirect:/dashboard";
+        } catch (BadCredentialsException e) {
+            model.addAttribute("error", "Invalid email or password");
+            return "login";
+        }
     }
-}
 
     @GetMapping("/logout")
     @PreAuthorize("hasAnyRole('BUYER', 'AGENT', 'ADMIN')")
@@ -88,19 +82,16 @@ public String processLogin(@ModelAttribute("user") User user, HttpServletRespons
     @GetMapping("/profile")
     @PreAuthorize("hasAnyRole('BUYER', 'AGENT', 'ADMIN')")
     public String showProfile(Model model) {
-        userService.prepareProfileModel(model);
+        model.addAttribute("user", userService.getCurrentUser());
         return "profile";
     }
 
     @GetMapping("/edit-profile")
     @PreAuthorize("isAuthenticated()")
     public String showEditProfileForm(Model model) {
-        User currentUser = userService.getCurrentUser();
-        model.addAttribute("user", currentUser);
+        model.addAttribute("user", userService.getCurrentUser());
         return "edit-profile";
     }
-
-
 
     @PostMapping("/edit-profile")
     @PreAuthorize("hasAnyRole('BUYER', 'AGENT', 'ADMIN')")
@@ -110,20 +101,21 @@ public String processLogin(@ModelAttribute("user") User user, HttpServletRespons
                                  @RequestParam(required = false) List<Long> removeIds,
                                  @RequestParam(value = "file", required = false) MultipartFile file,
                                  RedirectAttributes redirectAttributes) {
+        System.out.println("\uD83D\uDCEC Edit profile controller triggered");
         try {
             User actualUser = userService.getCurrentUser();
-            actualUser.setFirstName(updatedUser.getFirstName());
-            actualUser.setLastName(updatedUser.getLastName());
-            actualUser.setEmail(updatedUser.getEmail());
-
-            userService.updateUserSettings(actualUser, password, addIds, removeIds);
+            updatedUser.setId(actualUser.getId());
+            updatedUser.setRoles(actualUser.getRoles());
+            updatedUser.setEnabled(actualUser.isEnabled());
 
             if (file != null && !file.isEmpty()) {
                 String filename = userService.storeProfilePicture(actualUser.getId(), file);
-                actualUser.setProfilePicture(filename);
-                userService.updateUser(actualUser);
+                updatedUser.setProfilePicture(filename);
+            } else {
+                updatedUser.setProfilePicture(actualUser.getProfilePicture());
             }
 
+            userService.updateUserSettings(updatedUser, password, addIds, removeIds);
             redirectAttributes.addFlashAttribute("successMessage", "Account updated successfully.");
         } catch (Exception ex) {
             redirectAttributes.addFlashAttribute("errorMessage", "Failed to update account: " + ex.getMessage());
@@ -137,7 +129,6 @@ public String processLogin(@ModelAttribute("user") User user, HttpServletRespons
         try {
             Path filePath = Paths.get("uploads").resolve(filename).normalize();
             Resource resource = new UrlResource(filePath.toUri());
-
             if (resource.exists() && resource.isReadable()) {
                 return ResponseEntity.ok()
                         .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
@@ -150,8 +141,6 @@ public String processLogin(@ModelAttribute("user") User user, HttpServletRespons
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
-    
 
     @PreAuthorize("hasRole('AGENT')")
     @GetMapping("/manager/team")
@@ -173,13 +162,11 @@ public String processLogin(@ModelAttribute("user") User user, HttpServletRespons
                                RedirectAttributes redirectAttributes) {
         try {
             User savedUser = userService.registerNewUser(user, roleNames);
-
             if (file != null && !file.isEmpty()) {
                 String filename = userService.storeProfilePicture(savedUser.getId(), file);
                 savedUser.setProfilePicture(filename);
                 userService.updateUser(savedUser);
             }
-
             redirectAttributes.addFlashAttribute("successMessage", "Registration successful.");
             return "redirect:/login";
         } catch (Exception e) {
@@ -208,7 +195,6 @@ public String processLogin(@ModelAttribute("user") User user, HttpServletRespons
         try {
             Path filePath = Paths.get("uploads/profile-pictures/").resolve(filename).normalize();
             Resource resource = new UrlResource(filePath.toUri());
-
             if (resource.exists() && resource.isReadable()) {
                 return ResponseEntity.ok()
                         .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
@@ -243,19 +229,12 @@ public String processLogin(@ModelAttribute("user") User user, HttpServletRespons
         }
     }
 
-
-
     @GetMapping("/admin/users")
     @PreAuthorize("hasRole('ADMIN')")
     public String viewAllUsers(Model model) {
         List<User> allUsers = userService.getAllUsers();
-
-        for (User user : allUsers) {
-            System.out.println("User: " + user.getEmail() + " → Roles: " + user.getRoles());
-        }
-
+        allUsers.forEach(user -> System.out.println("User: " + user.getEmail() + " → Roles: " + user.getRoles()));
         model.addAttribute("users", allUsers);
         return "manage-users";
     }
-
 }

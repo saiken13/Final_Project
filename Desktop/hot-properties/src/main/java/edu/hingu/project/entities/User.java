@@ -7,6 +7,7 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -132,4 +133,17 @@ public class User {
         this.clients.add(u1);
         u1.setAgent(this);
     }
+
+    @OneToMany(mappedBy = "buyer", cascade = CascadeType.ALL, orphanRemoval = true)
+        @JsonIgnore
+        private List<Favorite> favorites = new ArrayList<>();
+
+        public List<Favorite> getFavorites() {
+            return favorites;
+        }
+
+        public void setFavorites(List<Favorite> favorites) {
+            this.favorites = favorites;
+        }
+
 }    

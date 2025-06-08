@@ -38,4 +38,7 @@ public interface PropertyService {
 
     List<Property> getPropertiesByUser(User user);
 
+    void removeFavorite(User user, Long propertyId);
+
+
 }
