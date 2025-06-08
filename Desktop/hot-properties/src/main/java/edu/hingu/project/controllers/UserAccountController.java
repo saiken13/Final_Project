@@ -15,6 +15,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +30,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import edu.hingu.project.entities.User;
 import edu.hingu.project.services.AuthService;
 import edu.hingu.project.services.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Controller
@@ -237,10 +239,36 @@ public class UserAccountController {
 
     @GetMapping("/admin/users")
     @PreAuthorize("hasRole('ADMIN')")
-    public String viewAllUsers(Model model) {
+    public String viewAllUsers(Model model, HttpServletRequest request) {
         List<User> allUsers = userService.getAllUsers();
+        CsrfToken token = (CsrfToken) request.getAttribute("_csrf");
+        model.addAttribute("_csrf", token);
         allUsers.forEach(user -> System.out.println("User: " + user.getEmail() + " → Roles: " + user.getRoles()));
         model.addAttribute("users", allUsers);
         return "manage-users";
     }
+
+    @PostMapping("/admin/delete-user/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String deleteUser(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            User currentUser = userService.getCurrentUser();
+            if (currentUser.getId().equals(id)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "You cannot delete yourself.");
+                return "redirect:/admin/users";
+            }
+
+            userService.deleteUser(id);
+            redirectAttributes.addFlashAttribute("successMessage", "User deleted.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("errorMessage", "Error deleting user: " + e.getMessage());
+        }
+        return "redirect:/admin/users";
+    }
+
+
+
 }
+
+

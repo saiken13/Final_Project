@@ -42,7 +42,7 @@ public class DataInitializer implements CommandLineRunner {
             .collect(Collectors.toList());
 
         if (agents.isEmpty()) {
-            System.err.println("❌ No AGENT users found.");
+            System.err.println("No AGENT users found.");
             return;
         }
 

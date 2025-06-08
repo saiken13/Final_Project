@@ -225,11 +225,16 @@ public void updateUserSettings(User updatedUser, String password, List<Long> add
     }
 
     @Override
+    @Transactional
     public void deleteUser(Long id) {
+        User user = userRepository.findById(id).orElseThrow();
+        // Manually delete owned properties
+        propertyRepository.deleteAll(propertyRepository.findByOwner(user));
         userRepository.deleteById(id);
     }
 
     @Override
+    @Transactional
     public User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();

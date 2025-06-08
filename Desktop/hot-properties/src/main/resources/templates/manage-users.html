@@ -8,13 +8,25 @@
         .table-container {
             margin-top: 30px;
         }
-        .profile-pic {
+        .profile-pic, .placeholder-img {
             width: 60px;
             height: 60px;
-            object-fit: cover;
             border-radius: 50%;
+            object-fit: cover;
+            display: block;
+            margin: 0 auto;
             border: 2px solid #ddd;
         }
+
+        .placeholder-img {
+            background-color: #eee;
+            font-weight: bold;
+            line-height: 60px;
+            text-align: center;
+            color: #777;
+            font-size: 14px;
+        }
+
 
         .navbar-brand img {
             height: 100px;
@@ -24,35 +36,24 @@
         th, td {
             vertical-align: middle;
         }
-        .placeholder-img {
-            width: 60px;
-            height: 60px;
-            background-color: #ddd;
-            border-radius: 50%;
-            line-height: 60px;
-            text-align: center;
-            font-weight: bold;
-            color: #666;
-            border: 2px solid #ccc;
-        }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container">
-        <a class="navbar-brand" href="/">
-            <img src="/images/logo.jpeg" alt="Logo"> Hot Properties
-        </a>
-        <div class="collapse navbar-collapse">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" th:href="@{/dashboard}">Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/admin/create-agent}">Create Agent</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/logout}">Logout</a></li>
-            </ul>
+    <nav class="navbar navbar-light bg-light">
+        <div class="container d-flex align-items-center justify-content-between">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="/images/logo.jpeg" alt="Logo" style="height: 80px;" class="me-2">
+                <span class="fs-4 fw-bold">Hot Properties</span>
+            </a>
+            <div>
+                <a class="btn btn-outline-secondary me-2" th:href="@{/dashboard}">Dashboard</a>
+                <a class="btn btn-outline-secondary me-2" th:href="@{/admin/create-agent}">Create Agent</a>
+                <a class="btn btn-outline-danger" th:href="@{/logout}">Logout</a>
+            </div>
         </div>
-    </div>
-</nav>
+    </nav>
+    
 
 <div class="container mt-5">
     <h2 class="mb-4">Manage Users</h2>
@@ -64,6 +65,7 @@
                     <th>Full Name</th>
                     <th>Email</th>
                     <th>Roles</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -75,13 +77,20 @@
                              alt="Profile Picture"/>
                         <div th:if="${user.profilePicture == null or user.profilePicture == ''}"
                              class="placeholder-img">N/A</div>
-                    </td>
+                    </td>                    
                     <td th:text="${user.firstName + ' ' + user.lastName}">Full Name</td>
                     <td th:text="${user.email}">user@email.com</td>
                     <td>
                         <span th:each="role, stat : ${user.roles}"
                               th:text="${role.name} + ${!stat.last ? ', ' : ''}">Role</span>
                     </td>
+                    <td>
+                        <form th:action="@{'/admin/delete-user/' + ${user.id}}" method="post"
+                            onsubmit="return confirm('Delete this user?');">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </td>                    
                 </tr>
             </tbody>
         </table>
