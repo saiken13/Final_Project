@@ -31,7 +31,6 @@ public class UserRoleInitializer {
     public void init() {
         if (userRepository.count() == 0 && roleRepository.count() == 0) {
 
-            // ✅ Store roles as plain names (NOT prefixed with ROLE_)
             Role roleBuyer = new Role("BUYER");
             Role roleAdmin = new Role("ADMIN");
             Role roleAgent = new Role("AGENT");
@@ -60,9 +59,9 @@ public class UserRoleInitializer {
 
 
             userRepository.saveAll(List.of(u1, u2, u3, u4, u5, u6, u7, u8, u9, u10));
-            System.out.println("🟢 Initial users and roles inserted.");
+            System.out.println("Initial users and roles inserted.");
         } else {
-            System.out.println("🟡 Users and roles already exist, skipping initialization.");
+            System.out.println("Users and roles already exist, skipping initialization.");
         }
     }
 }

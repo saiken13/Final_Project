@@ -17,11 +17,6 @@ public class MessageServiceImpl implements MessageService {
         this.messageRepository = messageRepository;
     }
 
-    // @Override
-    // public List<Message> getMessagesForAgent(User agent) {
-    //     return messageRepository.findByPropertyOwner(agent);
-    // }
-
     @Override
     public Message getById(Long id) {
         return messageRepository.findById(id).orElse(null);
@@ -40,7 +35,7 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public List<Message> getMessagesForAgent(User agent) {
         List<Message> messages = messageRepository.findByPropertyOwner(agent);
-        System.out.println("🧠 Messages fetched for " + agent.getEmail() + ": " + messages.size());
+        System.out.println(" Messages fetched for " + agent.getEmail() + ": " + messages.size());
         return messages;
     }
 

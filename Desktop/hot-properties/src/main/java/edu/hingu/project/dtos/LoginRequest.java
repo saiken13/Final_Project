@@ -7,17 +7,14 @@ public class LoginRequest {
 
     private String password;
 
-    // Default constructor
     public LoginRequest() {
     }
 
-    // Parameterized constructor
     public LoginRequest(String username, String password) {
         this.username = username;
         this.password = password;
     }
 
-    // Getter and Setter methods
     public String getUsername() {
         return username;
     }

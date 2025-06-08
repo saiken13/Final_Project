@@ -12,7 +12,6 @@ import edu.hingu.project.entities.User;
 @Repository
 public interface PropertyRepository extends JpaRepository<Property, Long> {
 
-    // ✅ Eagerly fetch images when loading all properties (for browse page)
     @EntityGraph(attributePaths = {"images"})
     List<Property> findAll();
 

@@ -89,11 +89,8 @@
     <div class="profile-card">
         <h2>My Profile</h2>
 
-        <!-- ✅ Flash Message for Success -->
         <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
 
-        <!-- ✅ Profile Picture Display -->
-        <!-- ✅ If user has profile picture -->
         <img th:src="${user.profilePicture} != null ? @{'/profile-pictures/' + ${user.profilePicture}} : @{'/images/default.jpg'}"
             alt="Profile Picture"
             class="profile-pic">

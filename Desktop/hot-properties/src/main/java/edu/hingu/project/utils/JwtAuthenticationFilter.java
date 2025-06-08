@@ -39,9 +39,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
 
         String path = request.getRequestURI();
-        log.debug("🔍 Intercepting request path: {}", path);
+        log.debug("intercepting request path: {}", path);
 
-        // ✅ Skip JWT authentication for truly public paths only
         if (path.equals("/") || path.equals("/index")
                 || path.equals("/login") || path.equals("/register")
                 || path.equals("/browse") || path.equals("/error")
@@ -50,59 +49,57 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 || path.startsWith("/profile-pictures")
                 || path.startsWith("/uploads")
                 || path.matches("^/images/.*\\.(png|jpg|jpeg|webp|svg)$")) {
-            log.debug("🔓 Skipping JWT auth for public path: {}", path);
+            log.debug("Skipping JWT auth for public path: {}", path);
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 🤠 Extract JWT from cookie
         String token = null;
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
-                log.debug("🍪 Cookie found: {} = {}", cookie.getName(), cookie.getValue());
+                log.debug("Cookie found: {} = {}", cookie.getName(), cookie.getValue());
                 if ("jwt".equals(cookie.getName())) {
                     token = cookie.getValue();
-                    log.debug("✅ JWT token extracted from cookie");
+                    log.debug("JWT token extracted from cookie");
                     break;
                 }
             }
         } else {
-            log.debug("🚫 No cookies found in request");
+            log.debug("No cookies found in request");
         }
 
         if (token == null || token.trim().isEmpty()) {
-            log.warn("❌ No JWT token found - skipping authentication");
+            log.warn("No JWT token found - skipping authentication");
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
             String username = jwtUtil.extractUsername(token);
-            log.debug("📧 Extracted username from JWT: {}", username);
+            log.debug("Extracted username from JWT: {}", username);
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            log.debug("👤 Loaded user details for: {}", userDetails.getUsername());
+            log.debug("Loaded user details for: {}", userDetails.getUsername());
 
             if (jwtUtil.validateToken(token, userDetails)) {
-                log.debug("✅ JWT token is valid");
+                log.debug("JWT token is valid");
             
                 UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                request.getSession(true); 
             
-                // ✅ Force session creation to support CSRF
-                request.getSession(true);  // <---- ADD THIS LINE
-            
-                log.info("🔐 Authenticated user: {}", username);
+                log.info("Authenticated user: {}", username);
             }
              else {
-                log.warn("❌ JWT token is invalid");
+                log.warn("JWT token is invalid");
             }
 
         } catch (Exception ex) {
-            log.error("🔥 Exception during JWT validation: {}", ex.getMessage(), ex);
+            log.error("Exception during JWT validation: {}", ex.getMessage(), ex);
         }
 
         filterChain.doFilter(request, response);

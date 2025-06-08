@@ -35,7 +35,7 @@ public class Property {
     private int size;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "owner_id") // creates owner_id column
+    @JoinColumn(name = "owner_id")
     private User owner;
 
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -49,12 +49,9 @@ public class Property {
     @Transient
     private List<String> imageUrls;
 
-    // ✅ NEW: Link to favorites
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Favorite> favorites = new ArrayList<>();
 
-
-    // --- Getters and Setters ---
 
     public List<Favorite> getFavorites() {
         if (favorites == null) {
@@ -111,8 +108,6 @@ public class Property {
         }
         return "/images/placeholder.jpg";
     }
-
-    // ✅ Favorites getters and setters
     
 
     public void setFavorites(List<Favorite> favorites) {

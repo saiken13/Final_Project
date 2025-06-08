@@ -162,7 +162,6 @@ public class UserAccountController {
                             @RequestParam(value = "file", required = false) MultipartFile file,
                             RedirectAttributes redirectAttributes) {
         try {
-            // ✅ Force registration as BUYER only
             List<String> roleNames = List.of("BUYER");
 
             User savedUser = userService.registerNewUser(user, roleNames);

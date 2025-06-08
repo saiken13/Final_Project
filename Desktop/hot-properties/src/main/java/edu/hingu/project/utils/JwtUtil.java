@@ -1,4 +1,3 @@
-// --- FIXED: JwtUtil.java ---
 package edu.hingu.project.utils;
 
 import java.security.Key;

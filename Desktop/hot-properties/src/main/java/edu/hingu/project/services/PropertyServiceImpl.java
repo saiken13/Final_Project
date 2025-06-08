@@ -46,14 +46,6 @@ public class PropertyServiceImpl implements PropertyService {
         return propertyRepository.findById(id);
     }
 
-    // @Override
-    // public Property saveProperty(Property property) {
-    //     if (property.getImageFolder() == null || property.getImageFolder().isBlank()) {
-    //         property.setImageFolder(property.getTitle());
-    //     }
-    //     return propertyRepository.save(property);
-    // }
-
     @Override
     public void deleteProperty(Long id) {
         propertyRepository.deleteById(id);
@@ -77,19 +69,18 @@ public class PropertyServiceImpl implements PropertyService {
     @Override
     public List<Property> getFavoritesByUser(User user) {
         if (user == null) {
-            System.out.println("❌ User is null in getFavoritesByUser");
+            System.out.println(" User is null in getFavoritesByUser");
             return Collections.emptyList();
         }
 
         List<Favorite> favorites = favoriteRepository.findByBuyerId(user.getId());
 
-        // 🔍 Debug print to verify DB state
-        System.out.println("🔥 Current favorites for user " + user.getEmail() + ":");
+        System.out.println("Current favorites for user " + user.getEmail() + ":");
         for (Favorite f : favorites) {
             if (f.getProperty() != null) {
                 System.out.println(" - Property ID: " + f.getProperty().getId() + " | Title: " + f.getProperty().getTitle());
             } else {
-                System.out.println(" - ⚠️ Property is null in Favorite ID: " + f.getId());
+                System.out.println(" - Property is null in Favorite ID: " + f.getId());
             }
         }
 
@@ -113,10 +104,10 @@ public class PropertyServiceImpl implements PropertyService {
 
         if (favoriteOpt.isPresent()) {
             favoriteRepository.delete(favoriteOpt.get());
-            favoriteRepository.flush();  // Force commit
-            System.out.println("🔥 Deleted favorite for propertyId = " + propertyId);
+            favoriteRepository.flush();
+            System.out.println("Deleted favorite for propertyId = " + propertyId);
         } else {
-            System.out.println("❌ Favorite NOT found for user " + managedUser.getEmail());
+            System.out.println("Favorite NOT found for user " + managedUser.getEmail());
         }
     }
 
@@ -124,21 +115,18 @@ public class PropertyServiceImpl implements PropertyService {
     public List<Property> filterProperties(String location, Integer minSqft, Double minPrice, Double maxPrice, String sort) {
         List<Property> properties = propertyRepository.findAll();
 
-        // Filter by location (e.g., Chicago, IL)
         if (location != null && !location.isBlank()) {
             properties = properties.stream()
                     .filter(p -> p.getLocation() != null && p.getLocation().toLowerCase().contains(location.toLowerCase()))
                     .collect(Collectors.toList());
         }
 
-        // Filter by size
         if (minSqft != null) {
             properties = properties.stream()
                     .filter(p -> p.getSize() >= minSqft)
                     .collect(Collectors.toList());
         }
 
-        // Filter by price range
         if (minPrice != null) {
             properties = properties.stream()
                     .filter(p -> p.getPrice() >= minPrice)
@@ -151,7 +139,6 @@ public class PropertyServiceImpl implements PropertyService {
                     .collect(Collectors.toList());
         }
 
-        // Sort results
         if ("high".equals(sort)) {
             properties.sort(Comparator.comparing(Property::getPrice).reversed());
         } else if ("low".equals(sort)) {
@@ -165,15 +152,13 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Override
     public boolean toggleFavorite(User user, Property property) {
-        // Re-fetch fresh managed User from DB
+
         User managedUser = userService.getUserById(user.getId())
             .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        // Re-fetch fresh managed Property from DB
         Property managedProperty = propertyRepository.findById(property.getId())
             .orElseThrow(() -> new IllegalArgumentException("Property not found"));
 
-        // Try to find existing favorite
         Optional<Favorite> existing = favoriteRepository.findByBuyerAndProperty(managedUser, managedProperty);
 
         if (existing.isPresent()) {
@@ -219,7 +204,7 @@ public class PropertyServiceImpl implements PropertyService {
             System.out.println("🧹 Deleting: " + imagePath.toAbsolutePath());
 
             boolean deleted = Files.deleteIfExists(imagePath);
-            System.out.println(deleted ? "✅ Deleted image." : "❌ Image not found.");
+            System.out.println(deleted ? "Deleted image." : "Image not found.");
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException("Failed to delete image: " + relativePath, e);
@@ -271,7 +256,7 @@ public class PropertyServiceImpl implements PropertyService {
             }
         }
     
-        propertyRepository.save(property); // ✅ Save even if no images
+        propertyRepository.save(property);
     }
     
 

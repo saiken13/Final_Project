@@ -46,26 +46,22 @@ public class SecurityConfig {
             )
 
             .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)  // ✅ Enable session for CSRF support
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             )
 
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.GET, "/register", "/login", "/browse", "/details/**", "/error").permitAll()
                 .requestMatchers(HttpMethod.POST, "/register", "/login").permitAll()
                 
-                // Buyer-specific
                 .requestMatchers(HttpMethod.POST, "/messages/send/**").hasRole("BUYER")
                 .requestMatchers("/favorites/**").hasRole("BUYER")
 
-                // Agent-specific (for property CRUD)
                 .requestMatchers("/properties/new", "/properties/manage", "/properties/edit/**", "/properties/delete/**").hasRole("AGENT")
                 .requestMatchers(HttpMethod.POST, "/properties/**").hasRole("AGENT")
 
-                // Static resources
                 .requestMatchers("/", "/index", "/css/**", "/js/**", "/images/**", "/webjars/**",
                                  "/profile-pictures/**", "/static/**", "/uploads/**").permitAll()
 
-                // Shared dashboard/profile/settings
                 .requestMatchers("/dashboard", "/profile", "/settings").hasAnyRole("BUYER", "AGENT", "ADMIN")
 
                 .anyRequest().authenticated()

@@ -30,7 +30,6 @@ public class Message {
 
     public Message() {}
 
-    // --- Getters and Setters ---
 
     public Long getId() {
         return id;

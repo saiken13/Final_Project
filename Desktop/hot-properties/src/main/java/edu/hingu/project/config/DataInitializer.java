@@ -30,7 +30,7 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        System.out.println("🧹 Cleaning DB for dev...");
+        System.out.println("Cleaning DB for dev...");
 
         jdbcTemplate.execute("DELETE FROM favorite");
         jdbcTemplate.execute("DELETE FROM property_image");
@@ -46,7 +46,7 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
 
-        System.out.println("📥 Loading homedata.csv and assigning to agents...");
+        System.out.println("Loading homedata.csv and assigning to agents...");
 
         try (
             CSVParser parser = CSVParser.parse(
@@ -64,12 +64,11 @@ public class DataInitializer implements CommandLineRunner {
                     String title = record.get("title").trim();
                     String folderName = title.replaceAll(" ", "_");
 
-                    // Skip duplicates based on title
                     if (insertedTitles.contains(title)) continue;
 
                     File folder = new File("src/main/resources/static/images/property-images/" + folderName);
                     if (!folder.exists()) {
-                        System.err.println("⚠️ Skipping: Missing image folder -> " + folderName);
+                        System.err.println(" Skipping: Missing image folder -> " + folderName);
                         continue;
                     }
 
@@ -89,13 +88,13 @@ public class DataInitializer implements CommandLineRunner {
                     insertedTitles.add(title);
                     count++;
                 } catch (Exception e) {
-                    System.err.println("❌ Skipped a row: " + e.getMessage());
+                    System.err.println(" Skipped a row: " + e.getMessage());
                 }
             }
 
-            System.out.println("✅ Loaded " + count + " properties.");
+            System.out.println(" Loaded " + count + " properties.");
         } catch (Exception e) {
-            System.err.println("❌ CSV read error: " + e.getMessage());
+            System.err.println(" CSV read error: " + e.getMessage());
         }
     }
 }

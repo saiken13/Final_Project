@@ -123,7 +123,7 @@ public class PropertyWebController {
 
         if (property == null) {
             redirectAttributes.addFlashAttribute("errorMessage", "Property not found.");
-            return "redirect:/browse"; // optional fallback
+            return "redirect:/browse";
         }
 
         if (propertyService.isFavoritedByUser(currentUser, property)) {
@@ -133,7 +133,7 @@ public class PropertyWebController {
             redirectAttributes.addFlashAttribute("infoMessage", "Property was not in your favorites.");
         }
 
-        return "redirect:/details/" + propertyId; // ✅ Redirect back to details
+        return "redirect:/details/" + propertyId; 
     }
 
 
@@ -165,9 +165,8 @@ public class PropertyWebController {
             property.setTempImagePath(imagePath);
         }
 
-        // ✅ Get CSRF token correctly for Spring MVC
         CsrfToken csrfToken = (CsrfToken) request.getAttribute("_csrf");
-        model.addAttribute("_csrf", csrfToken); // ✅ Safe now
+        model.addAttribute("_csrf", csrfToken); 
 
         model.addAttribute("favorites", favorites);
         return "favorites";
@@ -285,11 +284,10 @@ public class PropertyWebController {
     @GetMapping("/properties/new")
     @PreAuthorize("hasRole('AGENT')")
     public String showAddPropertyForm(Model model, HttpServletRequest request) {
-        System.out.println("🧪 Current authorities:");
+        System.out.println(" Current authorities:");
         SecurityContextHolder.getContext().getAuthentication().getAuthorities()
             .forEach(auth -> System.out.println(" - " + auth.getAuthority()));
 
-        // ✅ Fetch CSRF token from request and pass to Thymeleaf
         CsrfToken csrfToken = (CsrfToken) request.getAttribute("_csrf");
         model.addAttribute("_csrf", csrfToken);
 
@@ -305,10 +303,8 @@ public class PropertyWebController {
                             @RequestParam("images") MultipartFile[] images,
                             RedirectAttributes redirectAttributes,
                             HttpServletRequest request) {
-
-        // ✅ Log CSRF info for debugging
         CsrfToken csrfToken = (CsrfToken) request.getAttribute("_csrf");
-        System.out.println("🛡️ CSRF Token (from request): " + csrfToken.getToken());
+        System.out.println("CSRF Token (from request): " + csrfToken.getToken());
 
         try {
             Property savedProperty = propertyService.saveProperty(property);

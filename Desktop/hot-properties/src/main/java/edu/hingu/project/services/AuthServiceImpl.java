@@ -50,11 +50,11 @@ public class AuthServiceImpl implements AuthService {
         JwtResponse jwtResponse = authenticateAndGenerateToken(user);
 
         ResponseCookie cookie = ResponseCookie.from("jwt", jwtResponse.getToken())
-                .httpOnly(true)       // send to server only
-                .secure(false)        // false for localhost; true in production (https)
+                .httpOnly(true)       
+                .secure(false)       
                 .path("/")
-                .maxAge(60 * 60)      // 1 hour
-                .sameSite("Lax")      // ensures compatibility with normal POSTs
+                .maxAge(60 * 60)      
+                .sameSite("Lax")     
                 .build();
 
         return cookie;

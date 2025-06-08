@@ -11,25 +11,24 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "favorite") // ✅ make this explicit too
+@Table(name = "favorite") 
 public class Favorite {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "buyer_id") // ✅ maps to FK in 'favorite' table
+    @JoinColumn(name = "buyer_id") 
     private User buyer;
 
     @ManyToOne
-    @JoinColumn(name = "property_id") // ✅ maps to FK in 'favorite' table
+    @JoinColumn(name = "property_id") 
     private Property property;
 
     private LocalDateTime createdAt;
 
     public Favorite() {}
 
-    // Getters and setters
     public Long getId() { return id; }
 
     public User getBuyer() { return buyer; }

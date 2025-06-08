@@ -31,7 +31,6 @@ public class Role {
     @ManyToMany(mappedBy = "roles")
     private Set<User> users = new HashSet<>();
 
-    // --- Constructors ---
     public Role() {}
 
     public Role(String name) {
@@ -43,7 +42,6 @@ public class Role {
         this.name = name;
     }
 
-    // --- Getters and Setters ---
     public Long getId() {
         return id;
     }

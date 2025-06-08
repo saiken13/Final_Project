@@ -16,7 +16,6 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
     boolean existsByBuyerIdAndPropertyId(Long buyerId, Long propertyId);
     void deleteByBuyerIdAndPropertyId(Long buyerId, Long propertyId);
     
-    // ✅ This is the correct method name
     Optional<Favorite> findByBuyerAndProperty(User buyer, Property property);
 
     

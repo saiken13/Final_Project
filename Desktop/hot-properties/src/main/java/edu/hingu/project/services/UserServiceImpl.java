@@ -103,19 +103,16 @@ public class UserServiceImpl implements UserService {
     @Override
 @Transactional
 public void updateUserSettings(User updatedUser, String password, List<Long> addIds, List<Long> removeIds) {
-    User dbUser = getCurrentUser(); // ← get fresh user from DB
+    User dbUser = getCurrentUser();
 
-    // Basic fields
     dbUser.setFirstName(updatedUser.getFirstName());
     dbUser.setLastName(updatedUser.getLastName());
     dbUser.setEmail(updatedUser.getEmail());
 
-    // ✅ Handle password
     if (password != null && !password.isBlank()) {
         dbUser.setPassword(passwordEncoder.encode(password));
     }
 
-    // ✅ Assign new team if any (for agents)
     if (addIds != null) {
         for (Long empId : addIds) {
             User emp = userRepository.findById(empId).orElseThrow();
@@ -132,7 +129,6 @@ public void updateUserSettings(User updatedUser, String password, List<Long> add
         }
     }
 
-    // ✅ Save final user (with correct profile picture if already set)
     userRepository.save(dbUser);
 }
 
@@ -163,7 +159,7 @@ public void updateUserSettings(User updatedUser, String password, List<Long> add
                 .collect(Collectors.toSet());
 
         user.setRoles(roles);
-        user.setEnabled(true); // ← just to be sure
+        user.setEnabled(true); 
         return userRepository.save(user);
     }
 
@@ -182,7 +178,7 @@ public void updateUserSettings(User updatedUser, String password, List<Long> add
     public String storeProfilePicture(Long userId, MultipartFile file) {
         try {
             String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            System.out.println("📂 Saving profile picture as: " + filename);
+            System.out.println("Saving profile picture as: " + filename);
 
             Path uploadPath = Paths.get(System.getProperty("user.dir"), "uploads", "profile-pictures");
             Files.createDirectories(uploadPath);
@@ -197,12 +193,12 @@ public void updateUserSettings(User updatedUser, String password, List<Long> add
             Path filePath = uploadPath.resolve(filename);
             file.transferTo(filePath.toFile());
 
-            System.out.println("✅ Profile picture saved at: " + filePath);
+            System.out.println("Profile picture saved at: " + filePath);
 
             return filename;
 
         } catch (IOException ex) {
-            System.out.println("❌ Failed to save file: " + ex.getMessage());
+            System.out.println("Failed to save file: " + ex.getMessage());
             throw new RuntimeException("Failed to store profile picture", ex);
         }
     }
@@ -228,7 +224,6 @@ public void updateUserSettings(User updatedUser, String password, List<Long> add
     @Transactional
     public void deleteUser(Long id) {
         User user = userRepository.findById(id).orElseThrow();
-        // Manually delete owned properties
         propertyRepository.deleteAll(propertyRepository.findByOwner(user));
         userRepository.deleteById(id);
     }

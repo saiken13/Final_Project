@@ -32,7 +32,6 @@ public interface PropertyService {
 
     List<Property> filterProperties(String location, Integer minSqft, Double minPrice, Double maxPrice, String sort);
 
-    // ✅ Favorite-related methods
     boolean toggleFavorite(User user, Property property);
     boolean isFavoritedByUser(User user, Property property);
 

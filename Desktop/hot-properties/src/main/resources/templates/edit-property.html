@@ -129,11 +129,10 @@
             method: "POST",
             credentials: "include",
             headers: {
-            [csrfHeader]: csrfToken  // ✅ Include CSRF token in header
+            [csrfHeader]: csrfToken 
         }
         }).then(response => {
             if (response.ok) {
-                // ✅ Remove this image block from DOM
                 const imgDiv = document.getElementById(imageDivId);
                 if (imgDiv) imgDiv.remove();
             } else {
