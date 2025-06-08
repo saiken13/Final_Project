@@ -157,23 +157,29 @@ public class UserAccountController {
 
     @PostMapping("/register")
     public String registerUser(@ModelAttribute("user") User user,
-                               @RequestParam("selectedRoles") List<String> roleNames,
-                               @RequestParam(value = "file", required = false) MultipartFile file,
-                               RedirectAttributes redirectAttributes) {
+                            @RequestParam(value = "file", required = false) MultipartFile file,
+                            RedirectAttributes redirectAttributes) {
         try {
+            // ✅ Force registration as BUYER only
+            List<String> roleNames = List.of("BUYER");
+
             User savedUser = userService.registerNewUser(user, roleNames);
+
             if (file != null && !file.isEmpty()) {
                 String filename = userService.storeProfilePicture(savedUser.getId(), file);
                 savedUser.setProfilePicture(filename);
                 userService.updateUser(savedUser);
             }
+
             redirectAttributes.addFlashAttribute("successMessage", "Registration successful.");
             return "redirect:/login";
+
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Registration failed: " + e.getMessage());
             return "redirect:/register";
         }
     }
+
 
     @PostMapping("/users/{id}/upload-profile-picture")
     @PreAuthorize("hasAnyRole('BUYER', 'AGENT', 'ADMIN')")

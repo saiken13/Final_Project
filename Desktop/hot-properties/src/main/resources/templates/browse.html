@@ -34,7 +34,7 @@
 
     <form class="row g-3 mb-4" method="get" th:action="@{/browse}">
         <div class="col-md-2">
-            <input type="text" class="form-control" name="zip" placeholder="Zip Code" th:value="${param.zip}">
+            <input type="text" class="form-control" name="location" placeholder="Zip Code" th:value="${param.location}">
         </div>
         <div class="col-md-2">
             <input type="number" class="form-control" name="minSqft" placeholder="Min Sq Ft" th:value="${param.minSqft}">
@@ -59,6 +59,9 @@
     </form>
 
     <div class="row">
+        <div th:if="${properties.size() == 0}" class="text-center text-muted">
+            <p>No properties found for your criteria.</p>
+        </div>        
         <div th:each="property : ${properties}" class="col-md-4 mb-4">
             <div class="card property-card shadow-sm">
                 <img th:src="@{${property.thumbnailPath}}" class="card-img-top" alt="Thumbnail">

@@ -124,24 +124,34 @@ public class PropertyServiceImpl implements PropertyService {
     public List<Property> filterProperties(String location, Integer minSqft, Double minPrice, Double maxPrice, String sort) {
         List<Property> properties = propertyRepository.findAll();
 
+        // Filter by location (e.g., Chicago, IL)
         if (location != null && !location.isBlank()) {
             properties = properties.stream()
                     .filter(p -> p.getLocation() != null && p.getLocation().toLowerCase().contains(location.toLowerCase()))
                     .collect(Collectors.toList());
         }
 
+        // Filter by size
         if (minSqft != null) {
             properties = properties.stream()
                     .filter(p -> p.getSize() >= minSqft)
                     .collect(Collectors.toList());
         }
 
-        if (minPrice != null && maxPrice != null) {
+        // Filter by price range
+        if (minPrice != null) {
             properties = properties.stream()
-                    .filter(p -> p.getPrice() >= minPrice && p.getPrice() <= maxPrice)
+                    .filter(p -> p.getPrice() >= minPrice)
                     .collect(Collectors.toList());
         }
 
+        if (maxPrice != null) {
+            properties = properties.stream()
+                    .filter(p -> p.getPrice() <= maxPrice)
+                    .collect(Collectors.toList());
+        }
+
+        // Sort results
         if ("high".equals(sort)) {
             properties.sort(Comparator.comparing(Property::getPrice).reversed());
         } else if ("low".equals(sort)) {
@@ -150,6 +160,8 @@ public class PropertyServiceImpl implements PropertyService {
 
         return properties;
     }
+
+
 
     @Override
     public boolean toggleFavorite(User user, Property property) {

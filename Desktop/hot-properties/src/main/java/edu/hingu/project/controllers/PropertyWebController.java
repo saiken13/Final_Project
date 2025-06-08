@@ -44,15 +44,16 @@ public class PropertyWebController {
 
     @GetMapping("/browse")
     public String browse(@RequestParam(required = false) String location,
-                         @RequestParam(required = false) Integer minSqft,
-                         @RequestParam(required = false) Double minPrice,
-                         @RequestParam(required = false) Double maxPrice,
-                         @RequestParam(required = false) String sort,
-                         Model model) {
+                        @RequestParam(required = false) Integer minSqft,
+                        @RequestParam(required = false) Double minPrice,
+                        @RequestParam(required = false) Double maxPrice,
+                        @RequestParam(required = false) String sort,
+                        Model model) {
         List<Property> filtered = propertyService.filterProperties(location, minSqft, minPrice, maxPrice, sort);
         model.addAttribute("properties", filtered);
         return "browse";
     }
+
 
     @GetMapping("/details/{id}")
     @PreAuthorize("permitAll()")
