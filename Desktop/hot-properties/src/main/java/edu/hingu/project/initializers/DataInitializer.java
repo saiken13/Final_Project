@@ -1,4 +1,4 @@
-package edu.hingu.project.config;
+package edu.hingu.project.initializers;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;

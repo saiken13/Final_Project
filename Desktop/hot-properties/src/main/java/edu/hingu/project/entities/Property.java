@@ -115,14 +115,26 @@ public class Property {
     }
 
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
-private List<Message> messages = new ArrayList<>();
+    private List<Message> messages = new ArrayList<>();
 
-public List<Message> getMessages() {
-    return messages;
-}
+    public List<Message> getMessages() {
+        return messages;
+    }
 
-public void setMessages(List<Message> messages) {
-    this.messages = messages;
-}
+    public void setMessages(List<Message> messages) {
+        this.messages = messages;
+    }
+
+    @Transient
+    private int favoriteCount;
+
+    public int getFavoriteCount() {
+        return favoriteCount;
+    }
+
+    public void setFavoriteCount(int favoriteCount) {
+        this.favoriteCount = favoriteCount;
+    }
+
 
 }

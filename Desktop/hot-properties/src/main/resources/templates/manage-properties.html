@@ -90,7 +90,9 @@
                              th:src="@{'/images/property-images/' + ${img}}"
                              class="property-thumb"/>
                     </td>                    
-                    <td>0</td>
+                    <td>
+                        <span th:text="${property.favoriteCount}">?</span>
+                    </td>                                      
                     <td>
                         <a th:href="@{'/properties/edit/' + ${property.id}}" class="btn btn-primary btn-edit">Edit</a>
                         <a th:href="@{'/properties/delete/' + ${property.id}}"

@@ -148,8 +148,6 @@ public class PropertyServiceImpl implements PropertyService {
         return properties;
     }
 
-
-
     @Override
     public boolean toggleFavorite(User user, Property property) {
 
@@ -193,8 +191,23 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Override
     public List<Property> getPropertiesByUser(User user) {
-        return propertyRepository.findByOwnerId(user.getId());
+        List<Property> properties = propertyRepository.findByOwnerId(user.getId());
+
+        List<Favorite> allFavorites = favoriteRepository.findAll();
+
+        for (Property property : properties) {
+            if (property != null && property.getId() != null) {
+                long favoriteCount = allFavorites.stream()
+                    .filter(fav -> fav.getProperty() != null && fav.getProperty().getId().equals(property.getId()))
+                    .count();
+                property.setFavoriteCount((int) favoriteCount);
+            }
+        }
+
+        return properties;
     }
+
+
 
 
     @Override

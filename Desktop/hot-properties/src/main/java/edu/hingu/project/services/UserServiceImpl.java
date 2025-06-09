@@ -21,9 +21,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
+import edu.hingu.project.entities.Favorite;
 import edu.hingu.project.entities.Property;
 import edu.hingu.project.entities.Role;
 import edu.hingu.project.entities.User;
+import edu.hingu.project.repositories.FavoriteRepository;
 import edu.hingu.project.repositories.PropertyRepository;
 import edu.hingu.project.repositories.RoleRepository;
 import edu.hingu.project.repositories.UserRepository;
@@ -39,6 +41,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private PropertyRepository propertyRepository;
+
+    @Autowired
+    private FavoriteRepository favoriteRepository;
 
     public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -248,12 +253,23 @@ public void updateUserSettings(User updatedUser, String password, List<Long> add
         return propertyRepository.findByOwner(user);
     }
 
+
     @Override
     public void prepareManagePropertiesModel(Model model) {
         User currentUser = getCurrentUser();
         List<Property> properties = propertyRepository.findByOwner(currentUser);
 
+        
+        List<Favorite> allFavorites = favoriteRepository.findAll();
+
         for (Property property : properties) {
+            
+            long count = allFavorites.stream()
+                .filter(fav -> fav.getProperty() != null && fav.getProperty().getId().equals(property.getId()))
+                .count();
+            property.setFavoriteCount((int) count);
+
+            
             List<String> imageUrls = new ArrayList<>();
             String folder = property.getImageFolder();
 
@@ -276,4 +292,5 @@ public void updateUserSettings(User updatedUser, String password, List<Long> add
         model.addAttribute("properties", properties);
     }
 
+    
 }
