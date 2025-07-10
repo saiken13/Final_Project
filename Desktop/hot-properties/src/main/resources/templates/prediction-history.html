@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Prediction History</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+</head>
+<body>
+<div class="container mt-5">
+    <h2 class="mb-4">Your Prediction History</h2>
+
+    <div th:if="${history.empty}">
+        <p>No predictions found.</p>
+    </div>
+
+    <div th:if="${!history.empty}">
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
+            <tr>
+                <th>#</th>
+                <th>Bedrooms</th>
+                <th>Bathrooms</th>
+                <th>Area (sqft)</th>
+                <th>Predicted Price ($)</th>
+                <th>Timestamp</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="record, iterStat : ${history}">
+                <td th:text="${iterStat.index + 1}"></td>
+                <td th:text="${record.bedrooms}"></td>
+                <td th:text="${record.bathrooms}"></td>
+                <td th:text="${record.area}"></td>
+                <td th:text="${#numbers.formatDecimal(record.predictedPrice, 0, 'COMMA', 2, 'POINT')}"></td>
+                <td th:text="${#dates.format(record.timestamp, 'dd MMM yyyy hh:mm a')}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <a th:href="@{/dashboard}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+</div>
+</body>
+</html>

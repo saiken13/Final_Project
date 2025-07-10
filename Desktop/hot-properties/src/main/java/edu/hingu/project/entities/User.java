@@ -145,4 +145,8 @@ public class User {
             this.favorites = favorites;
         }
 
+        @OneToMany(mappedBy = "user")
+        private List<PredictionHistory> predictionHistory;
+
+
 }    
