@@ -105,6 +105,7 @@
 
             <div sec:authorize="hasRole('BUYER')">
                 <a th:href="@{/browse}">Browse Properties</a>
+                <a th:href="@{/api/predict/history/view}">Prediction History</a> <!-- Added link -->
             </div>
         </div>
 

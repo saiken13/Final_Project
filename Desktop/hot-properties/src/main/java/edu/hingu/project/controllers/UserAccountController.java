@@ -5,6 +5,8 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -27,8 +29,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import edu.hingu.project.entities.PredictionHistory;
 import edu.hingu.project.entities.User;
 import edu.hingu.project.services.AuthService;
+import edu.hingu.project.services.PredictionHistoryService;
 import edu.hingu.project.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -38,10 +42,13 @@ public class UserAccountController {
 
     private final AuthService authService;
     private final UserService userService;
+    private final PredictionHistoryService predictionHistoryService; // Added field
+     private static final Logger logger = LoggerFactory.getLogger(UserAccountController.class);
 
-    public UserAccountController(AuthService authService, UserService userService) {
+    public UserAccountController(AuthService authService, UserService userService, PredictionHistoryService predictionHistoryService) {
         this.authService = authService;
         this.userService = userService;
+        this.predictionHistoryService = predictionHistoryService;
     }
 
     @GetMapping({"/", "/index"})
@@ -181,7 +188,6 @@ public class UserAccountController {
         }
     }
 
-
     @PostMapping("/users/{id}/upload-profile-picture")
     @PreAuthorize("hasAnyRole('BUYER', 'AGENT', 'ADMIN')")
     public String uploadProfilePicture(@PathVariable Long id,
@@ -266,8 +272,13 @@ public class UserAccountController {
         return "redirect:/admin/users";
     }
 
-
-
+    @GetMapping("/api/predict/history/view")
+    @PreAuthorize("hasRole('BUYER')")
+    public String showPredictionHistory(Model model) {
+        logger.debug("Received GET request to /api/predict/history/view for user: {}", userService.getCurrentUser().getEmail());
+        String email = userService.getCurrentUser().getEmail();
+        List<PredictionHistory> historyList = predictionHistoryService.getUserHistory(email);
+        model.addAttribute("history", historyList);
+        return "prediction-history";
+    }
 }
-
-

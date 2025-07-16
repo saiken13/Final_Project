@@ -1,12 +1,12 @@
 package edu.hingu.project.controllers;
 
-
 import java.security.Principal;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,17 +22,17 @@ import edu.hingu.project.services.PricePredictionService;
 @RestController
 @RequestMapping("/api/predict")
 public class PricePredictionController {
+    private static final Logger logger = LoggerFactory.getLogger(PricePredictionController.class);
 
     @Autowired
     private PricePredictionService predictionService;
 
     @PostMapping
     public ResponseEntity<PricePredictionResponse> predictPrice(@RequestBody PropertyInputDto input) {
+        logger.debug("Received POST request to /api/predict with method: {}", "POST");
         double predicted = predictionService.predictPrice(input);
-
         PricePredictionResponse response = new PricePredictionResponse();
         response.setPredictedPrice(predicted);
-
         return ResponseEntity.ok(response);
     }
 
@@ -41,26 +41,15 @@ public class PricePredictionController {
 
     @PostMapping("/save")
     public ResponseEntity<Void> savePrediction(@RequestBody PropertyInputDto input, Principal principal) {
+        logger.debug("Received POST request to /api/predict/save");
         predictionHistoryService.savePrediction(input, principal.getName());
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/history")
     public ResponseEntity<List<PredictionHistory>> getHistory(Principal principal) {
+        logger.debug("Received GET request to /api/predict/history");
         List<PredictionHistory> history = predictionHistoryService.getUserHistory(principal.getName());
         return ResponseEntity.ok(history);
     }
-
-    @GetMapping("/history/view")
-    public String showPredictionHistory(Model model, Principal principal) {
-        String email = principal.getName(); // 👈 current logged-in user's email
-        List<PredictionHistory> historyList = predictionHistoryService.getUserHistory(email);
-
-        model.addAttribute("predictionHistoryList", historyList); // ✅ this is critical
-        return "prediction-history"; // corresponds to prediction-history.html
-    }
-
-
-
 }
-

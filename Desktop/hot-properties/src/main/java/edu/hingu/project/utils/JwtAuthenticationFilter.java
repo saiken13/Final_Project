@@ -37,7 +37,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-
         String path = request.getRequestURI();
         log.debug("intercepting request path: {}", path);
 
@@ -55,7 +54,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = null;
-        if (request.getCookies() != null) {
+        // Check Authorization header
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            token = header.substring(7); // Remove "Bearer " prefix
+            log.debug("JWT token extracted from Authorization header");
+        } else if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
                 log.debug("Cookie found: {} = {}", cookie.getName(), cookie.getValue());
                 if ("jwt".equals(cookie.getName())) {
@@ -64,8 +68,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     break;
                 }
             }
-        } else {
-            log.debug("No cookies found in request");
         }
 
         if (token == null || token.trim().isEmpty()) {
@@ -83,21 +85,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (jwtUtil.validateToken(token, userDetails)) {
                 log.debug("JWT token is valid");
-            
                 UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-            
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                request.getSession(true); 
-            
+                request.getSession(true);
                 log.info("Authenticated user: {}", username);
-            }
-             else {
+            } else {
                 log.warn("JWT token is invalid");
             }
-
         } catch (Exception ex) {
             log.error("Exception during JWT validation: {}", ex.getMessage(), ex);
         }

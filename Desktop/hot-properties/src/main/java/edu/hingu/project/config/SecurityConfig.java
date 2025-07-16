@@ -44,39 +44,29 @@ public class SecurityConfig {
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             )
-
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             )
-
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.GET, "/register", "/login", "/browse", "/details/**", "/error").permitAll()
                 .requestMatchers(HttpMethod.POST, "/register", "/login").permitAll()
-                
                 .requestMatchers(HttpMethod.POST, "/messages/send/**").hasRole("BUYER")
                 .requestMatchers("/favorites/**").hasRole("BUYER")
-
                 .requestMatchers("/properties/new", "/properties/manage", "/properties/edit/**", "/properties/delete/**").hasRole("AGENT")
                 .requestMatchers(HttpMethod.POST, "/properties/**").hasRole("AGENT")
-
                 .requestMatchers("/", "/index", "/css/**", "/js/**", "/images/**", "/webjars/**",
-                                 "/profile-pictures/**", "/static/**", "/uploads/**").permitAll()
-
+                                "/profile-pictures/**", "/static/**", "/uploads/**").permitAll()
                 .requestMatchers("/dashboard", "/profile", "/settings").hasAnyRole("BUYER", "AGENT", "ADMIN")
-
+                .requestMatchers("/api/predict/history/view").hasAnyRole("BUYER", "AGENT", "ADMIN") // Added
                 .anyRequest().authenticated()
             )
-
             .addFilterBefore(globalRateLimiterFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-
             .httpBasic(Customizer.withDefaults())
-
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
                 .accessDeniedHandler(new CustomAccessDeniedHandler())
             );
-
         return http.build();
     }
 

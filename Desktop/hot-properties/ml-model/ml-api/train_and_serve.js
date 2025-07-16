@@ -1,4 +1,15 @@
 // ml-api/train_and_serve.js
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err.stack);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason.stack);
+  process.exit(1);
+});
+
 const fs = require('fs');
 const { parse } = require('csv-parse/sync');
 const tf = require('@tensorflow/tfjs-node');
@@ -144,6 +155,8 @@ model.compile({
   metrics: ['mse']
 });
 
+// ... (previous code remains the same until the async block)
+
 (async () => {
   console.log('Training model...');
   const history = await model.fit(normalizedFeatures, normalizedLabels, { 
@@ -160,16 +173,16 @@ model.compile({
   
   await model.save('file://./model');
   
-  // Save normalization parameters
+  // Save normalization parameters as flat arrays
   const normalizationParams = {
-    featureMean: await featureMean.data(),
-    featureStd: await featureStd.data(),
-    labelMean: await labelMean.data(),
-    labelStd: await labelStd.data()
+    featureMean: Array.from(await featureMean.data()), // Ensure flat array
+    featureStd: Array.from(await featureStd.data()),  // Ensure flat array
+    labelMean: Array.from(await labelMean.data()),    // Ensure flat array
+    labelStd: Array.from(await labelStd.data())       // Ensure flat array
   };
   
   fs.writeFileSync('./normalization_params.json', JSON.stringify(normalizationParams));
-  console.log('Model and normalization parameters saved');
+  console.log('Model and normalization parameters saved:', normalizationParams);
   
   startServer();
 })();
@@ -180,35 +193,54 @@ function startServer() {
   app.use(express.json());
   
   app.post('/predict', async (req, res) => {
-    try {
-      const { bedrooms, bathrooms, area } = req.body;
-      
-      // Load normalization parameters
-      const normParams = JSON.parse(fs.readFileSync('./normalization_params.json'));
-      
-      // Normalize input
-      const input = tf.tensor2d([[bedrooms, bathrooms, area]]);
-      const featureMeanTensor = tf.tensor1d(normParams.featureMean);
-      const featureStdTensor = tf.tensor1d(normParams.featureStd);
-      const normalizedInput = input.sub(featureMeanTensor).div(featureStdTensor);
-      
-      // Load model and predict
-      const loaded = await tf.loadLayersModel('file://./model/model.json');
-      const normalizedOutput = loaded.predict(normalizedInput);
-      
-      // Denormalize output
-      const labelMean = normParams.labelMean[0];
-      const labelStd = normParams.labelStd[0];
-      const denormalizedOutput = normalizedOutput.mul(labelStd).add(labelMean);
-      
-      const predicted = denormalizedOutput.dataSync()[0];
-      
-      res.json({ predictedPrice: Math.round(Math.max(0, predicted)) });
-    } catch (error) {
-      console.error('Prediction error:', error);
-      res.status(500).json({ error: 'Prediction failed' });
-    }
-  });
+  try {
+    const { bedrooms, bathrooms, area } = req.body;
+    console.log('Received input:', { bedrooms, bathrooms, area });
 
-  app.listen(5000, () => console.log('ML API listening on port 5000'));
+    // Load normalization parameters
+    const normParams = JSON.parse(fs.readFileSync('./normalization_params.json'));
+    console.log('Normalization params loaded:', normParams);
+
+    // Normalize input
+    const input = tf.tensor2d([[bedrooms, bathrooms, area]]);
+    const featureMeanTensor = tf.tensor1d(normParams.featureMean);
+    const featureStdTensor = tf.tensor1d(normParams.featureStd);
+    const normalizedInput = input.sub(featureMeanTensor).div(featureStdTensor);
+    console.log('Normalized input shape:', normalizedInput.shape);
+
+    // Load model and predict
+    const loaded = await tf.loadLayersModel('file://./model/model.json');
+    console.log('Model loaded successfully');
+
+    const normalizedOutput = loaded.predict(normalizedInput);
+    console.log('Normalized output shape:', normalizedOutput.shape);
+    const outputData = normalizedOutput.dataSync();
+    console.log('Normalized output data:', outputData);
+
+    const labelMean = normParams.labelMean[0];
+    const labelStd = normParams.labelStd[0];
+    const denormalizedOutput = tf.mul(normalizedOutput, labelStd).add(labelMean);
+    console.log('Denormalized output shape:', denormalizedOutput.shape);
+
+    const predicted = denormalizedOutput.dataSync()[0];
+    console.log('Predicted value before rounding:', predicted);
+
+    const predictedPrice = Math.round(Math.max(0, predicted));
+    console.log('Sending response:', { predictedPrice }); // Add this
+    res.json({ predictedPrice }); // Send without Math.round() wrapper for clarity
+
+    // Dispose tensors to free memory
+    input.dispose();
+    featureMeanTensor.dispose();
+    featureStdTensor.dispose();
+    normalizedInput.dispose();
+    normalizedOutput.dispose();
+    denormalizedOutput.dispose();
+    loaded.dispose(); // Dispose the loaded model
+  } catch (error) {
+    console.error('Prediction error:', error.stack);
+    res.status(500).json({ error: 'Prediction failed' });
+  }
+});
+  app.listen(5001, () => console.log('ML API listening on port 5001'));
 }
